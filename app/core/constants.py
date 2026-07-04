@@ -3,5 +3,7 @@ SUPPORTED_FILE_TYPES = [
     ".docx",
     ".txt",
     ".md",
-    ".csv"
+    ".csv",
 ]
+
+DEFAULT_USER_ID = "guest"
