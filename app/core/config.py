@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     TOP_K_RESULTS: int
 
+    EMBEDDING_MODEL: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore"
