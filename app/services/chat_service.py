@@ -1,3 +1,5 @@
+from typing import Any
+
 from app.ai.chains.rag_chain import RAGChain
 from app.schemas.citation import Source
 
@@ -11,9 +13,13 @@ class ChatService:
     def ask(
         self,
         question: str,
+        metadata: dict[str, Any] | None = None,
     ) -> dict:
 
-        result = self.rag_chain.ask(question)
+        result = self.rag_chain.ask(
+            question=question,
+            metadata=metadata,
+        )
 
         answer = result["answer"]
 

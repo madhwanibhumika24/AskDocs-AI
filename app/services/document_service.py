@@ -3,6 +3,7 @@ from typing import List
 
 from fastapi import HTTPException, UploadFile
 
+from app.ai.pipeline.ingestion_pipeline import IngestionPipeline
 from app.core.config import settings
 from app.core.constants import DEFAULT_USER_ID
 from app.utils.file_utils import create_directory
@@ -12,6 +13,9 @@ from app.utils.validators import validate_file_type
 
 
 class DocumentService:
+
+    def __init__(self) -> None:
+        self.ingestion_pipeline = IngestionPipeline()
 
     async def upload_documents(
         self,
@@ -26,7 +30,7 @@ class DocumentService:
             if not validate_file_type(file.filename):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"{file.filename} is not a supported file type."
+                    detail=f"{file.filename} is not a supported file type.",
                 )
 
             document_id = generate_document_id()
@@ -55,18 +59,29 @@ class DocumentService:
                 file_size=len(contents),
             )
 
+            ingestion_result = self.ingestion_pipeline.process(
+                file_path=str(file_path),
+                metadata={
+                    "user_id": user_id,
+                    "document_id": document_id,
+                    "filename": file.filename,
+                },
+            )
+
             uploaded_documents.append(
                 {
                     "document_id": document_id,
                     "filename": file.filename,
-                    "file_type": Path(file.filename).suffix.replace(".", "")
+                    "file_type": Path(file.filename).suffix.replace(".", ""),
+                    "pages": ingestion_result["pages"],
+                    "chunks": ingestion_result["chunks"],
                 }
             )
 
         return {
             "success": True,
-            "message": "Documents uploaded successfully.",
-            "data": uploaded_documents
+            "message": "Documents uploaded and indexed successfully.",
+            "data": uploaded_documents,
         }
 
 

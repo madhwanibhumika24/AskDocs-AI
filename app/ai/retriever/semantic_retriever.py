@@ -1,3 +1,5 @@
+from typing import Any
+
 from langchain_core.documents import Document
 
 from app.ai.retriever.base_retriever import BaseRetriever
@@ -14,6 +16,7 @@ class SemanticRetriever(BaseRetriever):
         self,
         query: str,
         k: int = settings.TOP_K_RESULTS,
+        metadata: dict[str, Any] | None = None,
     ) -> list[Document]:
         """
         Retrieve the most semantically similar document chunks.
@@ -22,7 +25,14 @@ class SemanticRetriever(BaseRetriever):
         if not query.strip():
             raise ValueError("Query cannot be empty.")
 
+        search_kwargs = {
+            "query": query,
+            "k": k,
+        }
+
+        if metadata:
+            search_kwargs["filter"] = metadata
+
         return self.vectorstore.similarity_search(
-            query=query,
-            k=k,
+            **search_kwargs
         )

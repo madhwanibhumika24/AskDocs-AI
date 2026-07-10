@@ -1,3 +1,5 @@
+from typing import Any
+
 from langchain_core.output_parsers import StrOutputParser
 
 from app.ai.chains.prompt_builder import PromptBuilder
@@ -17,12 +19,16 @@ class RAGChain:
     def ask(
         self,
         question: str,
+        metadata: dict[str, Any] | None = None,
     ) -> dict:
 
         if not question.strip():
             raise ValueError("Question cannot be empty.")
 
-        documents = self.retriever.retrieve(question)
+        documents = self.retriever.retrieve(
+            query=question,
+            metadata=metadata,
+        )
 
         context = "\n\n".join(
             document.page_content
