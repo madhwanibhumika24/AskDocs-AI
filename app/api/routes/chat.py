@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.chat import ChatRequest
+from app.schemas.citation import ChatResponse
 from app.services.chat_service import chat_service
 
 router = APIRouter(
@@ -17,10 +18,11 @@ async def chat(
     request: ChatRequest,
 ):
 
-    answer = chat_service.ask(
+    result = chat_service.ask(
         request.question
     )
 
     return ChatResponse(
-        answer=answer
+        answer=result["answer"],
+        sources=result["sources"],
     )

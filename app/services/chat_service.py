@@ -1,4 +1,5 @@
 from app.ai.chains.rag_chain import RAGChain
+from app.schemas.citation import Source
 
 
 class ChatService:
@@ -10,9 +11,51 @@ class ChatService:
     def ask(
         self,
         question: str,
-    ) -> str:
+    ) -> dict:
 
-        return self.rag_chain.ask(question)
+        result = self.rag_chain.ask(question)
+
+        answer = result["answer"]
+
+        documents = result["documents"]
+
+        sources = []
+
+        seen = set()
+
+        for document in documents:
+
+            filename = document.metadata.get(
+                "filename",
+                "Unknown",
+            )
+
+            page = document.metadata.get(
+                "page",
+                0,
+            )
+
+            key = (
+                filename,
+                page,
+            )
+
+            if key in seen:
+                continue
+
+            seen.add(key)
+
+            sources.append(
+                Source(
+                    filename=filename,
+                    page=page,
+                )
+            )
+
+        return {
+            "answer": answer,
+            "sources": sources,
+        }
 
 
 chat_service = ChatService()

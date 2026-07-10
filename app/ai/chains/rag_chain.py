@@ -14,27 +14,27 @@ class RAGChain:
         self.prompt = PromptBuilder.get_prompt()
         self.output_parser = StrOutputParser()
 
-    def ask(self, question: str) -> str:
+    def ask(
+        self,
+        question: str,
+    ) -> dict:
 
         if not question.strip():
             raise ValueError("Question cannot be empty.")
 
-        # Retrieve relevant chunks
         documents = self.retriever.retrieve(question)
 
-        # Combine chunk contents
         context = "\n\n".join(
-            document.page_content for document in documents
+            document.page_content
+            for document in documents
         )
 
-        # Build LCEL chain
         chain = (
             self.prompt
             | self.llm
             | self.output_parser
         )
 
-        # Invoke chain
         answer = chain.invoke(
             {
                 "context": context,
@@ -42,4 +42,7 @@ class RAGChain:
             }
         )
 
-        return answer
+        return {
+            "answer": answer,
+            "documents": documents,
+        }
