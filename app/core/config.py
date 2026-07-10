@@ -9,6 +9,8 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: str = ""
 
+    LLM_MODEL: str
+
     UPLOAD_DIRECTORY: str
 
     CHROMA_DIRECTORY: str
