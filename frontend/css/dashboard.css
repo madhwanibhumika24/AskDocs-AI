@@ -1,0 +1,199 @@
+/* AskDocs Dashboard — layout */
+
+:root{
+  --indigo:#5b4fe9;
+  --indigo-dark:#4a3fd6;
+  --indigo-light:#eef0ff;
+  --ink:#1b1f2e;
+  --ink-soft:#6b7280;
+  --border:#e6e7ee;
+  --bg:#f7f7fb;
+  --sidebar-w:250px;
+  --sources-w:270px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+.dashboard{
+  display:grid;
+  grid-template-columns:var(--sidebar-w) 1fr var(--sources-w);
+  height:100vh;
+}
+
+/* ===================== SIDEBAR ===================== */
+
+.sidebar{
+  background:#161327;
+  color:#c9c8d8;
+  display:flex;
+  flex-direction:column;
+  padding:26px 18px;
+  height:100vh;
+  overflow:hidden;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:19px;
+  font-weight:800;
+  color:#fff;
+  padding:0 8px;
+  margin-bottom:22px;
+}
+
+.logo-badge{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#6a5cf5,#4a3fd6);
+  display:flex;align-items:center;justify-content:center;
+}
+
+.upload-btn{
+  width:100%;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px;border:none;border-radius:10px;
+  background:var(--indigo);color:#fff;
+  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+  margin-bottom:22px;
+  transition:background .15s ease, transform .1s ease;
+}
+.upload-btn:hover{background:var(--indigo-dark)}
+.upload-btn:active{transform:translateY(1px)}
+
+/* scrollable nav area so tabs never get clipped, even on short screens */
+.sidebar-scroll{
+  flex:1;
+  overflow-y:auto;
+  min-height:0;
+  padding-right:2px;
+}
+.sidebar-scroll::-webkit-scrollbar{width:5px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+
+.menu{margin-bottom:22px}
+
+.menu h4{
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#6f6d85;padding:0 10px;margin-bottom:10px;
+}
+
+.menu a{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 10px;border-radius:9px;
+  font-size:14px;font-weight:600;color:#c9c8d8;
+  text-decoration:none;cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+  margin-bottom:2px;
+}
+.menu a svg{width:17px;height:17px;flex-shrink:0;opacity:.85}
+.menu a:hover{background:rgba(255,255,255,.06);color:#fff}
+.menu a.active{
+  background:rgba(91,79,233,.22);
+  color:#fff;
+}
+.menu a.active svg{color:#a89bff;opacity:1}
+
+.logout-btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;padding:11px;margin-top:8px;
+  background:transparent;border:1.5px solid rgba(255,255,255,.12);
+  border-radius:10px;color:#c9c8d8;font-family:inherit;
+  font-size:13.5px;font-weight:700;cursor:pointer;
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+  flex-shrink:0;
+}
+.logout-btn:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2);color:#fff}
+
+/* ===================== MAIN WORKSPACE ===================== */
+
+.workspace{
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  overflow-y:auto;
+  padding:28px 32px 0;
+}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.topbar h2{font-size:22px;font-weight:800;margin:0 0 3px}
+.topbar p{font-size:13.5px;color:var(--ink-soft);margin:0}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-bottom:20px;
+}
+
+.chat-section{
+  flex:1;
+  min-height:220px;
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:16px;
+  overflow-y:auto;
+}
+
+.chat-input{
+  position:sticky;
+  bottom:0;
+  display:flex;
+  gap:10px;
+  background:var(--bg);
+  padding:14px 0 22px;
+}
+.chat-input input{
+  flex:1;padding:13px 16px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:14.5px;font-family:inherit;background:#fff;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.chat-input input:focus{
+  outline:none;border-color:var(--indigo);
+  box-shadow:0 0 0 3.5px rgba(91,79,233,.12);
+}
+.chat-input button{
+  display:flex;align-items:center;gap:7px;
+  padding:0 22px;border:none;border-radius:10px;
+  background:var(--indigo);color:#fff;font-weight:700;font-size:14px;
+  font-family:inherit;cursor:pointer;
+  transition:background .15s ease;
+}
+.chat-input button:hover{background:var(--indigo-dark)}
+
+/* ===================== SOURCES PANEL ===================== */
+
+.sources{
+  background:#fff;
+  border-left:1.5px solid var(--border);
+  padding:26px 20px;
+  height:100vh;
+  overflow-y:auto;
+}
+.sources h3{font-size:14.5px;font-weight:700;margin:0 0 14px}
+#sourceList{font-size:13.5px;color:var(--ink-soft)}
+
+/* ===================== RESPONSIVE ===================== */
+
+@media(max-width:1180px){
+  .dashboard{grid-template-columns:var(--sidebar-w) 1fr}
+  .sources{display:none}
+}
+
+@media(max-width:860px){
+  .dashboard{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}

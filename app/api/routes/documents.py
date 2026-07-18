@@ -15,3 +15,13 @@ async def upload_documents(
     files: List[UploadFile] = File(...)
 ):
     return await document_service.upload_documents(files)
+
+
+@router.get("")
+async def list_documents():
+    return await document_service.list_documents()
+
+
+@router.delete("/{document_id}")
+async def delete_document(document_id: str):
+    return await document_service.delete_document(document_id)

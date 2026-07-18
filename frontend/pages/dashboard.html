@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AskDocs — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:ital,wght@0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   TOKENS
+   ========================================================== */
+:root{
+  --font-display:'Fraunces', serif;
+  --purple:#7C6FFF;
+  --purple-dark:#6255E8;
+  --purple-deep:#B8AFFF;
+  --purple-light:rgba(124,111,255,.16);
+  --purple-100:rgba(124,111,255,.10);
+  --cyan:#2DD4EE;
+  --amber:#F5A623;
+  --green:#34D399;
+  --red:#F0554B;
+
+  --ink:#F1F2FA;
+  --ink-soft:#9FA2C0;
+  --ink-faint:#767AA0;
+  --border:rgba(255,255,255,.09);
+  --border-soft:rgba(255,255,255,.06);
+  --bg:#0A0C18;
+  --white:#12142A;
+  --surface:#12142A;
+  --surface-2:#171A38;
+
+  --sidebar-w:264px;
+  --sources-w:296px;
+  --topbar-h:68px;
+
+  --radius-sm:10px;
+  --radius-md:14px;
+  --radius-lg:20px;
+  --radius-pill:999px;
+
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 1px 1px rgba(0,0,0,.2);
+  --shadow-md:0 12px 32px -14px rgba(0,0,0,.55);
+  --shadow-lg:0 28px 56px -20px rgba(0,0,0,.65);
+
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+/* The HTML "hidden" attribute normally means display:none, but our own
+   .panel class (and others) set their own "display" value, which wins
+   over the browser's built-in hidden rule. This line makes sure that
+   anything marked hidden actually disappears, no matter what other
+   display value its class would otherwise give it. */
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  font-family:'Inter',-apple-system,sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(124,111,255,.09), transparent 40%),
+    radial-gradient(circle at 88% 18%, rgba(45,212,238,.06), transparent 38%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size:26px 26px;
+  pointer-events:none;
+  z-index:0;
+  opacity:.32;
+}
+
+::selection{background:var(--purple-light);color:var(--purple-deep)}
+
+button{font-family:inherit}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:2.5px solid var(--purple);
+  outline-offset:2px;
+}
+
+/* ==========================================================
+   LAYOUT SHELL
+   ========================================================== */
+.shell{
+  display:grid;
+  grid-template-columns:var(--sidebar-w) 1fr var(--sources-w);
+  min-height:100vh;
+  position:relative;
+  z-index:1;
+}
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  background:linear-gradient(180deg, rgba(18,20,42,.92) 0%, rgba(10,12,24,.96) 100%);
+  backdrop-filter:blur(20px);
+  color:#C7C6DA;
+  display:flex;
+  flex-direction:column;
+  padding:22px 16px;
+  border-right:1px solid var(--border);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 8px 22px;
+}
+.brand-mark{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,#9C90FF,#7C6FFF 55%,#4A3FD6);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 18px -4px rgba(124,111,255,.65);
+}
+.brand-name{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:20px;color:#fff;letter-spacing:0;
+}
+.brand-name sup{
+  display:block;font-size:9.5px;font-weight:600;color:#8B87A8;
+  letter-spacing:.09em;text-transform:uppercase;margin-top:1px;
+}
+
+.upload-btn{
+  width:100%;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;border:none;border-radius:var(--radius-sm);
+  background:linear-gradient(90deg,var(--purple),var(--cyan));color:#fff;
+  font-size:14px;font-weight:700;cursor:pointer;
+  margin-bottom:20px;
+  box-shadow:0 6px 18px -6px rgba(124,111,255,.5);
+  transition:filter .15s var(--ease), transform .1s var(--ease);
+}
+.upload-btn:hover{filter:brightness(1.08)}
+.upload-btn:active{transform:translateY(1px) scale(.99)}
+
+.sidebar-scroll{
+  flex:1;
+  overflow-y:auto;
+  min-height:0;
+  scrollbar-width:thin;
+}
+.sidebar-scroll::-webkit-scrollbar{width:5px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
+.nav-group{margin-bottom:20px}
+.nav-group h4{
+  font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:#565277;padding:0 10px;margin:0 0 8px;
+}
+.nav-link{
+  display:flex;align-items:center;gap:11px;
+  padding:9.5px 10px;border-radius:9px;
+  font-size:14px;font-weight:600;color:#C7C6DA;
+  text-decoration:none;cursor:pointer;border:none;background:none;width:100%;text-align:left;
+  transition:background .15s var(--ease), color .15s var(--ease);
+  margin-bottom:2px;
+  position:relative;
+}
+.nav-link svg{width:17px;height:17px;flex-shrink:0;opacity:.8}
+.nav-link:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-link.active{background:rgba(91,79,233,.28);color:#fff}
+.nav-link.active svg{opacity:1;color:#B3A9FF}
+.nav-link.active::before{
+  content:"";position:absolute;left:-16px;top:50%;transform:translateY(-50%);
+  width:3px;height:18px;border-radius:0 4px 4px 0;background:#8A7EFF;
+}
+
+.sidebar-footer{
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;
+}
+.logout-btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;padding:11px;
+  background:transparent;border:1.5px solid rgba(255,255,255,.12);
+  border-radius:var(--radius-sm);color:#C7C6DA;
+  font-size:13.5px;font-weight:700;cursor:pointer;
+  transition:background .15s var(--ease), border-color .15s var(--ease), color .15s var(--ease);
+}
+.logout-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);color:#fff}
+
+/* ==========================================================
+   MAIN COLUMN
+   ========================================================== */
+.main{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:100vh;
+}
+
+/* ---- topbar ---- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  height:var(--topbar-h);
+  display:flex;align-items:center;gap:16px;
+  padding:0 28px;
+  background:rgba(10,12,24,.72);
+  backdrop-filter:blur(14px) saturate(160%);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);
+  border-bottom:1px solid var(--border);
+}
+
+.search-wrap{
+  flex:1;
+  max-width:440px;
+  position:relative;
+}
+.search-wrap svg{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--ink-faint);
+  pointer-events:none;
+}
+.search-wrap input{
+  width:100%;
+  padding:9.5px 14px 9.5px 38px;
+  border:1.5px solid var(--border);border-radius:var(--radius-pill);
+  background:var(--surface);font-size:13.5px;font-family:inherit;color:var(--ink);
+  transition:border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.search-wrap input::placeholder{color:var(--ink-faint)}
+.search-wrap input:focus{
+  outline:none;border-color:var(--purple);
+  box-shadow:0 0 0 4px rgba(91,79,233,.12);
+}
+
+.topbar-spacer{flex:1}
+
+.icon-btn{
+  position:relative;
+  width:38px;height:38px;border-radius:50%;
+  border:1.5px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--ink-soft);flex-shrink:0;
+  transition:border-color .15s var(--ease), color .15s var(--ease), background .15s var(--ease);
+}
+.icon-btn svg{width:17px;height:17px}
+.icon-btn:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-100)}
+.icon-btn .dot{
+  position:absolute;top:8px;right:8px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);border:1.5px solid var(--surface);
+}
+
+.theme-toggle{
+  width:44px;height:26px;border-radius:var(--radius-pill);
+  background:var(--purple-light);border:1.5px solid var(--border);
+  cursor:pointer;position:relative;flex-shrink:0;
+  transition:background .2s var(--ease);
+}
+.theme-toggle .knob{
+  position:absolute;top:2px;left:2px;
+  width:19px;height:19px;border-radius:50%;
+  background:var(--purple);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .25s var(--ease);
+  box-shadow:var(--shadow-sm);
+}
+.theme-toggle .knob svg{width:11px;height:11px;color:#fff}
+.theme-toggle.on .knob{transform:translateX(18px)}
+
+.profile-pill{
+  display:flex;align-items:center;gap:9px;
+  padding:6px 14px 6px 6px;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-pill);
+  font-size:13.5px;font-weight:700;color:var(--ink);
+  cursor:pointer;flex-shrink:0;white-space:nowrap;
+  transition:border-color .15s var(--ease);
+}
+.profile-pill:hover{border-color:rgba(124,111,255,.4)}
+.profile-avatar{
+  width:29px;height:29px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#8A7EFF,#4A3FD6);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:12px;font-weight:800;
+}
+
+/* ---- workspace body ---- */
+.workspace{
+  flex:1;
+  padding:26px 28px 28px;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+
+/* welcome card */
+.welcome-card{
+  position:relative;
+  overflow:hidden;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:26px 30px;
+  margin-bottom:20px;
+  color:var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.welcome-card::after{
+  content:"";
+  position:absolute;right:-80px;top:-80px;
+  width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle at center, rgba(124,111,255,.14), transparent 70%);
+  pointer-events:none;
+}
+.welcome-text h1{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:28px;margin:0 0 5px;letter-spacing:0;line-height:1.15;
+}
+
+.gradient-rule{
+  width:44px;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--purple),var(--cyan));
+  margin:8px 0 12px;
+}
+.welcome-text p{
+  font-size:13.5px;margin:0;color:rgba(255,255,255,.78);max-width:440px;
+}
+.welcome-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:11px 22px;border:none;border-radius:var(--radius-sm);
+  background:linear-gradient(90deg,var(--purple),var(--cyan));color:#fff;
+  font-size:13.5px;font-weight:800;cursor:pointer;flex-shrink:0;
+  position:relative;z-index:1;
+  box-shadow:0 8px 22px -8px rgba(124,111,255,.55);
+  transition:transform .15s var(--ease), box-shadow .15s var(--ease);
+}
+.welcome-cta:hover{transform:translateY(-2px);box-shadow:0 12px 28px -8px rgba(124,111,255,.7)}
+
+/* stats */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:20px;
+}
+.stat-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:17px 18px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  transition:transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+}
+.stat-card:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow-md);
+  border-color:transparent;
+}
+.stat-info h3{
+  font-size:11.5px;font-weight:700;color:var(--ink-soft);
+  margin:0 0 6px;text-transform:uppercase;letter-spacing:.03em;
+}
+.stat-info h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:28px;margin:0;letter-spacing:0}
+.stat-info .trend{
+  font-size:11px;font-weight:700;color:var(--green);margin-top:5px;display:block;
+}
+.stat-icon{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.stat-icon svg{width:18px;height:18px}
+.stat-icon--docs{background:var(--purple-light);color:var(--purple)}
+.stat-icon--chats{background:rgba(52,211,153,.14);color:var(--green)}
+.stat-icon--notes{background:rgba(245,166,35,.14);color:var(--amber)}
+.stat-icon--flash{background:rgba(240,85,75,.14);color:var(--red)}
+
+/* generic card */
+.panel{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-lg);
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-height:460px;
+  overflow:hidden;
+}
+
+/* Quiz panels should grow to fit their content and let the page scroll
+   normally — they're not meant to be height-bounded with internal
+   scrolling like the AI Chat panel is. Without this override, flex:1 +
+   overflow:hidden on the base .panel rule silently clips anything taller
+   than the flex-computed height instead of growing to fit it. */
+#quizSetupPanel,
+#quizResultsPanel,
+#flashcardSetupPanel,
+#flashcardStudyPanel{
+  flex:none;
+  min-height:0;
+  height:auto;
+  overflow:visible;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;
+  border-bottom:1px solid var(--border-soft);
+  flex-shrink:0;
+}
+.panel-head h3{font-size:14.5px;font-weight:800;margin:0;display:flex;align-items:center;gap:8px}
+.panel-head h3 .pulse{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 3px rgba(31,157,77,.16);
+}
+.panel-head .hint{font-size:12px;color:var(--ink-faint);font-weight:600}
+
+.chat-head-actions{
+  display:flex;align-items:center;gap:8px;
+}
+
+.summarize-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 22px;border-radius:var(--radius-pill);
+  background:rgba(52,211,153,.14);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1.5px solid rgba(52,211,153,.4);
+  color:#5EEAD4;font-family:inherit;font-size:14px;font-weight:800;
+  cursor:pointer;flex-shrink:0;white-space:nowrap;
+  box-shadow:0 10px 28px -10px rgba(52,211,153,.45), inset 0 1px 0 rgba(255,255,255,.08);
+  transition:background .15s var(--ease), border-color .15s var(--ease), transform .1s var(--ease), box-shadow .15s var(--ease);
+}
+.summarize-btn:hover{
+  background:rgba(52,211,153,.22);
+  border-color:rgba(52,211,153,.6);
+  box-shadow:0 14px 34px -10px rgba(52,211,153,.6), inset 0 1px 0 rgba(255,255,255,.12);
+}
+.summarize-btn:active{transform:scale(.97)}
+.summarize-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+.chat-scope-select{
+  padding:7px 10px;border:1.5px solid var(--border);border-radius:9px;
+  font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink);
+  background:var(--surface-2);
+  transition:border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.chat-scope-select:focus{
+  outline:none;border-color:var(--purple);
+  box-shadow:0 0 0 3.5px rgba(124,111,255,.15);
+}
+
+/* document chips row */
+.chip-row{
+  display:flex;flex-wrap:wrap;gap:8px;
+  padding:14px 20px;
+  border-bottom:1px solid var(--border-soft);
+  background:var(--surface-2);
+  flex-shrink:0;
+}
+.document-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 8px 7px 12px;
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-pill);
+  font-size:12.5px;font-weight:600;color:var(--ink);
+  transition:border-color .15s var(--ease), background .15s var(--ease);
+  animation:chipIn .25s var(--ease);
+}
+.document-chip:hover{border-color:rgba(124,111,255,.4);background:var(--purple-100)}
+.document-chip .chip-icon{font-size:13px;line-height:1}
+.document-chip button{
+  width:18px;height:18px;border-radius:50%;border:none;
+  background:var(--border-soft);color:var(--ink-soft);
+  font-size:11px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.document-chip button:hover{background:var(--red);color:#fff}
+.chip-empty{font-size:12.5px;color:var(--ink-faint);font-weight:600;padding:6px 2px}
+
+@keyframes chipIn{from{opacity:0;transform:translateY(-4px) scale(.95)}to{opacity:1;transform:none}}
+
+/* messages */
+.chat-body{
+  flex:1;
+  overflow-y:auto;
+  padding:22px 22px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  scroll-behavior:smooth;
+}
+.chat-body::-webkit-scrollbar{width:6px}
+.chat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.message{display:flex;gap:10px;max-width:78%;animation:msgIn .25s var(--ease)}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.message.ai{align-self:flex-start}
+.message.user{align-self:flex-end;flex-direction:row-reverse}
+
+.msg-avatar{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:#fff;margin-top:2px;
+}
+.message.ai .msg-avatar{background:linear-gradient(135deg,#8A7EFF,#4A3FD6)}
+.message.user .msg-avatar{background:#3A3550}
+
+.bubble{
+  padding:12px 16px;
+  border-radius:16px;
+  font-size:14px;
+  line-height:1.65;
+}
+.message.ai .bubble{
+  background:var(--purple-100);
+  color:var(--ink);
+  border-bottom-left-radius:4px;
+}
+.message.user .bubble{
+  background:var(--purple);
+  color:#fff;
+  border-bottom-right-radius:4px;
+}
+.bubble .cite-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:8px;margin-right:6px;
+  padding:3px 9px;border-radius:var(--radius-pill);
+  background:var(--purple-light);border:1px solid rgba(124,111,255,.3);
+  font-size:11px;font-weight:700;color:var(--purple-dark);
+}
+
+.typing-indicator{display:flex;gap:4px;padding:4px 2px}
+.typing-indicator span{
+  width:6px;height:6px;border-radius:50%;background:var(--purple);
+  opacity:.4;animation:typingBounce 1s infinite ease-in-out;
+}
+.typing-indicator span:nth-child(2){animation-delay:.15s}
+.typing-indicator span:nth-child(3){animation-delay:.3s}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+
+/* chat input */
+.chat-input-bar{
+  flex-shrink:0;
+  border-top:1px solid var(--border-soft);
+  padding:14px 20px 18px;
+  background:var(--surface);
+}
+.chat-input-inner{
+  display:flex;align-items:flex-end;gap:10px;
+  border:1.5px solid var(--border);border-radius:16px;
+  padding:8px 8px 8px 6px;
+  background:var(--surface-2);
+  transition:border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.chat-input-inner:focus-within{
+  border-color:var(--purple);
+  box-shadow:0 0 0 4px rgba(91,79,233,.1);
+  background:var(--surface);
+}
+.attach-btn{
+  width:38px;height:38px;border-radius:11px;flex-shrink:0;
+  border:none;background:transparent;color:var(--ink-soft);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.attach-btn:hover{background:var(--purple-light);color:var(--purple)}
+.attach-btn svg{width:19px;height:19px}
+
+#question{
+  flex:1;border:none;background:transparent;resize:none;
+  font-family:inherit;font-size:14.5px;color:var(--ink);
+  padding:9px 4px;max-height:140px;line-height:1.5;
+}
+#question::placeholder{color:var(--ink-faint)}
+#question:focus{outline:none}
+
+#sendBtn{
+  display:flex;align-items:center;gap:7px;flex-shrink:0;
+  padding:0 18px;height:40px;border:none;border-radius:11px;
+  background:linear-gradient(90deg,var(--purple),var(--cyan));color:#fff;font-weight:700;font-size:13.5px;
+  cursor:pointer;
+  transition:filter .15s var(--ease), transform .1s var(--ease);
+}
+#sendBtn:hover{filter:brightness(1.08)}
+#sendBtn:active{transform:scale(.97)}
+#sendBtn:disabled{opacity:.5;cursor:not-allowed}
+#sendBtn svg{width:15px;height:15px}
+
+.input-foot{
+  font-size:11px;color:var(--ink-faint);text-align:center;margin-top:9px;
+}
+
+/* ==========================================================
+   RIGHT PANEL — SOURCES
+   ========================================================== */
+.sources{
+  position:sticky;top:0;
+  height:100vh;
+  background:var(--surface);
+  border-left:1px solid var(--border);
+  padding:24px 18px 18px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+.sources::-webkit-scrollbar{width:5px}
+.sources::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.sources h3{
+  font-size:13.5px;font-weight:800;margin:0 0 3px;
+  display:flex;align-items:center;gap:7px;
+}
+.sources h3 svg{width:15px;height:15px;color:var(--purple)}
+.sources .sub{font-size:11.5px;color:var(--ink-faint);margin:0 0 14px}
+
+/* citation trail — signature element */
+#sourceList{
+  position:relative;
+  display:flex;flex-direction:column;gap:2px;
+}
+.source-card{
+  position:relative;
+  padding:12px 12px 12px 22px;
+  margin-bottom:2px;
+}
+.source-card::before{
+  content:"";
+  position:absolute;left:5px;top:0;bottom:0;
+  width:1.5px;background:var(--border);
+}
+.source-card::after{
+  content:"";
+  position:absolute;left:1.5px;top:17px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--purple);
+  box-shadow:0 0 0 3px var(--purple-light);
+}
+.source-card:last-child::before{bottom:calc(100% - 24px)}
+.source-inner{
+  background:var(--purple-100);
+  border:1px solid rgba(124,111,255,.25);
+  border-radius:12px;
+  padding:11px 13px;
+  transition:border-color .15s var(--ease), transform .15s var(--ease);
+}
+.source-card:hover .source-inner{border-color:rgba(124,111,255,.5);transform:translateX(2px)}
+.source-inner h4{font-size:12.5px;font-weight:700;margin:0 0 3px;color:var(--ink);word-break:break-word}
+.source-inner p{font-size:11.5px;color:var(--purple-dark);margin:0;font-weight:600}
+.sources-empty{
+  font-size:12.5px;color:var(--ink-faint);font-weight:600;
+  padding:16px 4px;text-align:center;
+  border:1.5px dashed var(--border);border-radius:12px;
+}
+
+/* recent documents */
+.recent-doc{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 11px;border:1.5px solid var(--border);border-radius:11px;
+  margin-bottom:8px;
+  transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.recent-doc:hover{border-color:rgba(124,111,255,.4);background:var(--purple-100)}
+.recent-doc-icon{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:var(--purple-light);color:var(--purple);
+  display:flex;align-items:center;justify-content:center;
+}
+.recent-doc-icon svg{width:15px;height:15px}
+.recent-doc-info{min-width:0;flex:1}
+.recent-doc-info h5{font-size:12.5px;font-weight:700;margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-doc-info span{font-size:11px;color:var(--ink-faint);font-weight:600}
+
+/* ==========================================================
+   VIEW SWITCHING
+   ========================================================== */
+.view{display:none;flex-direction:column;gap:20px}
+.view.active-view{display:flex}
+
+#chat-view.active-view{
+  height:calc(100vh - var(--topbar-h) - 54px);
+  min-height:0;
+}
+#chat-view .panel{
+  min-height:0;
+  height:100%;
+}
+
+/* ==========================================================
+   QUIZ
+   ========================================================== */
+.quiz-setup{
+  display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;
+  padding:18px 20px;
+}
+.quiz-field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px}
+.quiz-field--narrow{flex:0 0 110px;min-width:110px}
+.quiz-field label{font-size:12px;font-weight:700;color:var(--ink-soft)}
+.quiz-field select,
+.quiz-field input{
+  padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);
+  transition:border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.quiz-field select:focus,
+.quiz-field input:focus{
+  outline:none;border-color:var(--purple);
+  box-shadow:0 0 0 3.5px rgba(91,79,233,.12);
+}
+.quiz-hint{
+  font-size:11.5px;color:var(--ink-faint);font-weight:600;
+  padding:0 20px 18px;margin:0;
+}
+
+.primary-action-btn{
+  display:inline-flex;align-items:center;gap:8px;flex-shrink:0;
+  padding:0 20px;height:41px;border:none;border-radius:10px;
+  background:linear-gradient(90deg,var(--purple),var(--cyan));color:#fff;font-weight:700;font-size:13.5px;
+  cursor:pointer;transition:filter .15s var(--ease), transform .1s var(--ease);
+}
+.primary-action-btn:hover{filter:brightness(1.08)}
+.primary-action-btn:disabled{opacity:.55;cursor:not-allowed}
+.primary-action-btn .spinner{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.4);border-top-color:#fff;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.ghost-btn{
+  padding:8px 14px;border:1.5px solid var(--border);border-radius:9px;
+  background:var(--surface);color:var(--ink-soft);font-weight:700;font-size:12.5px;
+  cursor:pointer;transition:border-color .15s var(--ease), color .15s var(--ease);
+}
+.ghost-btn:hover{border-color:var(--purple);color:var(--purple)}
+
+.quiz-empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:48px 20px;color:var(--ink-faint);
+  border:1.5px dashed var(--border);border-radius:var(--radius-lg);
+  text-align:center;
+}
+.quiz-empty-state svg{color:var(--purple);opacity:.5}
+.quiz-empty-state p{margin:0;font-size:13.5px;font-weight:600}
+
+.quiz-questions{
+  display:flex;flex-direction:column;gap:16px;
+  padding:20px;
+}
+
+.quiz-card{
+  border:1.5px solid var(--border);border-radius:var(--radius-md);
+  padding:18px 20px;background:var(--surface-2);
+  animation:msgIn .25s var(--ease);
+}
+.quiz-card-head{
+  display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;
+}
+.quiz-number{
+  flex-shrink:0;width:26px;height:26px;border-radius:8px;
+  background:var(--purple-light);color:var(--purple);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;
+}
+.quiz-question-text{font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.5;margin:0}
+.quiz-type-tag{
+  flex-shrink:0;padding:3px 9px;border-radius:var(--radius-pill);
+  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+  background:var(--purple-light);color:var(--purple-dark);
+}
+
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-option{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;border:1.5px solid var(--border);border-radius:11px;
+  background:var(--surface);cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink);
+  transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.quiz-option:hover{border-color:rgba(124,111,255,.4);background:var(--purple-100)}
+.quiz-option input{accent-color:var(--purple);width:16px;height:16px;flex-shrink:0}
+.quiz-option.selected{border-color:var(--purple);background:var(--purple-100)}
+
+.quiz-option.correct{border-color:var(--green);background:rgba(52,211,153,.14)}
+.quiz-option.correct::after{content:"✓";margin-left:auto;color:var(--green);font-weight:800}
+.quiz-option.incorrect{border-color:var(--red);background:rgba(240,85,75,.14)}
+.quiz-option.incorrect::after{content:"✕";margin-left:auto;color:var(--red);font-weight:800}
+
+.quiz-footer{
+  padding:16px 20px 20px;border-top:1px solid var(--border-soft);
+  display:flex;justify-content:flex-end;
+}
+
+.quiz-score-banner{
+  margin:0 20px 4px;padding:16px 20px;border-radius:var(--radius-md);
+  background:linear-gradient(120deg,#211A4D 0%, #4A3FD6 60%, #6E62F0 100%);
+  color:#fff;display:flex;align-items:center;justify-content:space-between;
+  animation:msgIn .25s var(--ease);
+}
+.quiz-score-banner h4{margin:0 0 3px;font-size:15px;font-weight:800}
+.quiz-score-banner p{margin:0;font-size:12.5px;color:rgba(255,255,255,.8)}
+.quiz-score-banner .score-value{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:30px}
+
+/* ==========================================================
+   FLASHCARDS
+   ========================================================== */
+.flashcard-stage{
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+  padding:24px 20px 30px;
+}
+
+.flashcard-progress{
+  font-size:12.5px;font-weight:700;color:var(--ink-faint);
+  letter-spacing:.02em;
+}
+
+.flashcard{
+  width:100%;max-width:760px;height:420px;
+  perspective:1400px;
+  cursor:pointer;
+}
+
+.flashcard-inner{
+  position:relative;
+  width:100%;height:100%;
+  transition:transform .5s var(--ease);
+  transform-style:preserve-3d;
+}
+.flashcard.is-flipped .flashcard-inner{
+  transform:rotateY(180deg);
+}
+
+.flashcard-face{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;
+  padding:36px;
+  border-radius:var(--radius-lg);
+  backface-visibility:hidden;
+  text-align:center;
+}
+
+.flashcard-front{
+  background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+  border:1px solid rgba(124,111,255,.28);
+  box-shadow:0 20px 44px -22px rgba(0,0,0,.55);
+}
+.flashcard-back{
+  background:linear-gradient(160deg, rgba(124,111,255,.16), rgba(45,212,238,.08));
+  border:1px solid rgba(124,111,255,.4);
+  box-shadow:0 20px 44px -22px rgba(124,111,255,.35);
+  transform:rotateY(180deg);
+}
+
+.flashcard-label{
+  font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--purple-deep);
+}
+
+.flashcard-front p{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:38px;line-height:1.3;color:var(--ink);margin:0;
+}
+.flashcard-back p{
+  font-size:19px;line-height:1.65;color:var(--ink);margin:0;
+  max-height:250px;overflow-y:auto;
+}
+
+.flashcard-flip-hint{
+  font-size:11px;color:var(--ink-faint);font-weight:600;
+}
+
+.flashcard-nav{
+  display:flex;align-items:center;gap:12px;
+}
+@media(max-width:1240px){
+  .shell{grid-template-columns:var(--sidebar-w) 1fr}
+  .sources{display:none}
+}
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .search-wrap{display:none}
+}
+@media(max-width:560px){
+  .workspace{padding:18px 14px 14px}
+  .welcome-card{flex-direction:column;align-items:flex-start}
+  .topbar{padding:0 14px;gap:10px}
+  .stats{grid-template-columns:1fr}
+}
+
+/* ==========================================================
+   QUICK TOOLS GRID (Option A — lifted cards on dark page)
+   ========================================================== */
+.tools-section{margin-bottom:20px}
+.tools-section-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:12px;
+}
+.tools-section-head h3{font-size:14.5px;font-weight:800;margin:0;color:var(--ink)}
+.tools-section-head span{font-size:11.5px;color:var(--ink-faint);font-weight:600}
+
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+  gap:14px;
+}
+
+.feature-card{
+  border-radius:16px;
+  padding:18px 18px 20px;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+  border:1px solid rgba(124,111,255,.22);
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 16px 32px -22px rgba(0,0,0,.55);
+  transition:transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+}
+.feature-card::after{
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size:14px 14px;pointer-events:none;opacity:.5;
+}
+.feature-card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(124,111,255,.5);
+  box-shadow:0 22px 44px -18px rgba(124,111,255,.35);
+}
+.feature-card.disabled{cursor:default}
+.feature-card.disabled:hover{transform:none;border-color:rgba(124,111,255,.22);box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 16px 32px -22px rgba(0,0,0,.55)}
+
+.fc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;position:relative;z-index:1}
+.fc-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.fc-icon svg{width:17px;height:17px}
+.fc-chevron{opacity:.4;flex-shrink:0;margin-top:8px;color:var(--ink)}
+.feature-card h4{font-size:14px;font-weight:800;margin:0 0 5px;color:var(--ink);letter-spacing:-.005em;position:relative;z-index:1}
+.feature-card p{font-size:12px;line-height:1.55;margin:0;color:var(--ink-soft);position:relative;z-index:1}
+
+.fc-soon{
+  position:absolute;top:16px;right:16px;z-index:1;
+  font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+  padding:3px 8px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,.06);color:var(--ink-faint);
+}
+
+.ic-purple{background:rgba(124,111,255,.16);color:#9C90FF}
+.ic-cyan{background:rgba(45,212,238,.16);color:#5FE3F5}
+.ic-amber{background:rgba(245,166,35,.16);color:#F5B85C}
+.ic-green{background:rgba(52,211,153,.16);color:#5EEAD4}
+.ic-red{background:rgba(240,85,75,.16);color:#F0897F}
+.ic-blue{background:rgba(76,141,255,.16);color:#7CA8FF}
+</style>
+</head>
+<body>
+
+<input type="file" id="pdfInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx" hidden aria-label="Upload documents">
+
+<script src="../js/auth.js"></script>
+<script>requireAuth();</script>
+
+<div class="shell">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z" fill="#fff" opacity=".95"/><path d="M14 4v5h5" fill="#C9C6F7"/><path d="M8 13h6M8 16.5h6M8 10.5h3" stroke="#5B4FE9" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </span>
+      <span class="brand-name">AskDocs<sup>AI Workspace</sup></span>
+    </div>
+
+    <nav class="sidebar-scroll">
+      <div class="nav-group">
+        <h4>Workspace</h4>
+        <a class="nav-link active" data-view="dashboard-view" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link" data-view="chat-view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h13l3 3v13H4z"/><path d="M8 10h8M8 14h5"/></svg>
+          <span>AI Chat</span>
+        </a>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg>
+          <span>Documents</span>
+        </a>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          <span>Notes</span>
+        </a>
+        <a class="nav-link" data-view="flashcards-view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="14" height="10" rx="2"/><rect x="7" y="10" width="14" height="10" rx="2"/></svg>
+          <span>Flashcards</span>
+        </a>
+        <a class="nav-link" data-view="quiz-view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+          <span>Quiz</span>
+        </a>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          <span>Analytics</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <h4>PDF Toolkit</h4>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h7l3 3v13H4z"/><path d="M13 13h7l3 3v4h-10z"/></svg>
+          <span>Merge PDF</span>
+        </a>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v7H4zM4 13h16v7H4z"/></svg>
+          <span>Split PDF</span>
+        </a>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4h8l4 4v12H8z"/><path d="M11 12l1.5 3L15 12"/></svg>
+          <span>Compress PDF</span>
+        </a>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
+          <span>OCR</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <h4>Account</h4>
+        <a class="nav-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 01-4 0v-.09A1.7 1.7 0 008 19.36a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.64 15 1.7 1.7 0 003.09 14H3a2 2 0 010-4h.09A1.7 1.7 0 004.64 9a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 009 4.64 1.7 1.7 0 0010 3.09V3a2 2 0 014 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06A1.7 1.7 0 0019.36 9c.14.4.4.75.75 1H21a2 2 0 010 4h-.09a1.7 1.7 0 00-1.51 1z"/></svg>
+          <span>Settings</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" placeholder="Search documents, notes, chats…" aria-label="Search">
+      </div>
+      <div class="topbar-spacer"></div>
+
+      <button class="theme-toggle on" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="true">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 109 9 7 7 0 01-9-9z"/></svg>
+        </span>
+      </button>
+
+      <button class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="dot" aria-hidden="true"></span>
+      </button>
+
+      <button class="profile-pill" id="profileBtn" aria-label="Account menu">
+        <span class="profile-avatar" id="avatarInitial">?</span>
+        <span id="username">Loading…</span>
+      </button>
+    </header>
+
+    <!-- WORKSPACE -->
+    <main class="workspace">
+
+      <!-- ===================== DASHBOARD VIEW ===================== -->
+      <section class="view active-view" id="dashboard-view">
+
+      <section class="welcome-card">
+        <div class="welcome-text">
+          <h1>Welcome back 👋</h1>
+          <div class="gradient-rule"></div>
+          <p>Upload a document and start asking questions — AskDocs finds the answer and shows exactly where it came from.</p>
+        </div>
+        <button class="welcome-cta" onclick="openUploadDialog()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v12M6 10l6-6 6 6M4 20h16"/></svg>
+          Upload a document
+        </button>
+      </section>
+
+      <section class="stats" aria-label="Workspace statistics">
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Documents</h3>
+            <h2 id="docCount">0</h2>
+            <span class="trend">Ready to query</span>
+          </div>
+          <div class="stat-icon stat-icon--docs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/></svg>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Chats</h3>
+            <h2 id="chatCount">0</h2>
+            <span class="trend">This week</span>
+          </div>
+          <div class="stat-icon stat-icon--chats">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h13l3 3v13H4z"/></svg>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Notes</h3>
+            <h2 id="noteCount">0</h2>
+            <span class="trend">Saved</span>
+          </div>
+          <div class="stat-icon stat-icon--notes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8"/></svg>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>Flashcards</h3>
+            <h2 id="flashCount">0</h2>
+            <span class="trend">To review</span>
+          </div>
+          <div class="stat-icon stat-icon--flash">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="14" height="10" rx="2"/><rect x="7" y="10" width="14" height="10" rx="2"/></svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUICK TOOLS -->
+      <section class="tools-section" aria-label="Quick tools">
+        <div class="tools-section-head">
+          <h3>Quick Tools</h3>
+          <span>Jump straight to a feature</span>
+        </div>
+        <div class="tools-grid">
+
+          <div class="feature-card" id="qtChat">
+            <div class="fc-top">
+              <div class="fc-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h13l3 3v13H4z"/><path d="M8 10h8M8 14h5"/></svg></div>
+              <svg class="fc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <h4>Chat with PDF</h4>
+            <p>Ask questions about any document and get answers with the source quoted.</p>
+          </div>
+
+          <div class="feature-card" id="qtQuiz">
+            <div class="fc-top">
+              <div class="fc-icon ic-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+              <svg class="fc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <h4>Quiz</h4>
+            <p>Generate multiple-choice and true/false questions from your documents.</p>
+          </div>
+
+          <div class="feature-card" id="qtUpload">
+            <div class="fc-top">
+              <div class="fc-icon ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg></div>
+              <svg class="fc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <h4>Upload Document</h4>
+            <p>Add a new PDF, Word doc, or slide deck to your workspace.</p>
+          </div>
+
+          <div class="feature-card disabled">
+            <div class="fc-soon">Soon</div>
+            <div class="fc-top">
+              <div class="fc-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div>
+            </div>
+            <h4>Notes</h4>
+            <p>Auto-generated summaries and notes you can edit and save per document.</p>
+          </div>
+
+          <div class="feature-card" id="qtFlashcards">
+            <div class="fc-top">
+              <div class="fc-icon ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="14" height="10" rx="2"/><rect x="7" y="10" width="14" height="10" rx="2"/></svg></div>
+              <svg class="fc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <h4>Flashcards</h4>
+            <p>Turn key concepts into flashcards you can review over time.</p>
+          </div>
+
+          <div class="feature-card disabled">
+            <div class="fc-soon">Soon</div>
+            <div class="fc-top">
+              <div class="fc-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></div>
+            </div>
+            <h4>Analytics</h4>
+            <p>Track how much you've studied, chatted, and quizzed over time.</p>
+          </div>
+
+        </div>
+      </section>
+
+      </section>
+      <!-- ===================== /DASHBOARD VIEW ===================== -->
+
+      <!-- ===================== CHAT VIEW (full screen) ===================== -->
+      <section class="view" id="chat-view" hidden>
+
+        <section class="panel" aria-label="AI chat workspace">
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> AI Chat</h3>
+            <div class="chat-head-actions">
+              <button id="summarizeBtn" class="summarize-btn" title="Ask for a summary of the selected document">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+                Summarize
+              </button>
+              <select id="chatDocumentSelect" class="chat-scope-select" aria-label="Scope chat to a document">
+                <option value="">All documents</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="chip-row" id="uploadedDocuments">
+            <span class="chip-empty">No documents uploaded yet — click "Upload Document" to get started.</span>
+          </div>
+
+          <div class="chat-body" id="messages">
+            <div class="message ai">
+              <span class="msg-avatar" aria-hidden="true">AI</span>
+              <div class="bubble">Welcome to AskDocs. Upload a PDF, DOC, or PPT and ask me anything about it — I'll answer with citations back to the exact page.</div>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <div class="chat-input-inner">
+              <button class="attach-btn" onclick="openUploadDialog()" aria-label="Attach document" title="Attach document">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a5.5 5.5 0 01-7.78-7.78l9.2-9.19a3.5 3.5 0 014.95 4.95l-9.2 9.19a1.5 1.5 0 01-2.12-2.12l8.49-8.48"/></svg>
+              </button>
+              <textarea id="question" rows="1" placeholder="Ask anything about your documents…" aria-label="Ask a question"></textarea>
+              <button id="sendBtn">
+                Send
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 12h16M13 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+            <p class="input-foot">AskDocs answers only from documents you've uploaded — always double-check important facts.</p>
+          </div>
+        </section>
+
+      </section>
+      <!-- ===================== /CHAT VIEW ===================== -->
+
+      <!-- ===================== QUIZ VIEW ===================== -->
+      <section class="view" id="quiz-view" hidden>
+
+        <section class="welcome-card">
+          <div class="welcome-text">
+            <h1>Quiz yourself 🧠</h1>
+            <p>Generate multiple-choice and true/false questions straight from your uploaded documents.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="quizSetupPanel" aria-label="Quiz setup">
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> Generate a Quiz</h3>
+            <span class="hint">Powered by your uploaded documents</span>
+          </div>
+
+          <div class="quiz-setup">
+            <div class="quiz-field">
+              <label for="quizDocumentSelect">Source</label>
+              <select id="quizDocumentSelect">
+                <option value="">All documents</option>
+              </select>
+            </div>
+
+            <div class="quiz-field quiz-field--narrow">
+              <label for="quizQuestionCount">Questions</label>
+              <input type="number" id="quizQuestionCount" min="1" max="20" value="5">
+            </div>
+
+            <button id="generateQuizBtn" class="primary-action-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+              Generate Quiz
+            </button>
+          </div>
+
+          <p class="quiz-hint">Uses the full text of the selected document(s) — larger documents may take a few seconds.</p>
+        </section>
+
+        <section class="panel" id="quizResultsPanel" aria-label="Quiz questions" hidden>
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> Your Quiz</h3>
+            <button id="regenerateQuizBtn" class="ghost-btn">Start Over</button>
+          </div>
+
+          <div id="quizQuestions" class="quiz-questions"></div>
+
+          <div class="quiz-footer">
+            <button id="submitQuizBtn" class="primary-action-btn">Submit Answers</button>
+          </div>
+        </section>
+
+        <div id="quizEmptyState" class="quiz-empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+          <p>No quiz yet — pick a document above and hit Generate.</p>
+        </div>
+
+      </section>
+      <!-- ===================== /QUIZ VIEW ===================== -->
+
+      <!-- ===================== FLASHCARDS VIEW ===================== -->
+      <section class="view" id="flashcards-view" hidden>
+
+        <section class="welcome-card">
+          <div class="welcome-text">
+            <h1>Study with flashcards 🗂️</h1>
+            <div class="gradient-rule"></div>
+            <p>Turn key terms and concepts from your documents into flashcards you can flip through.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="flashcardSetupPanel" aria-label="Flashcard setup">
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> Generate Flashcards</h3>
+            <span class="hint">Powered by your uploaded documents</span>
+          </div>
+
+          <div class="quiz-setup">
+            <div class="quiz-field">
+              <label for="flashcardDocumentSelect">Source</label>
+              <select id="flashcardDocumentSelect">
+                <option value="">All documents</option>
+              </select>
+            </div>
+
+            <div class="quiz-field quiz-field--narrow">
+              <label for="flashcardCount">Cards</label>
+              <input type="number" id="flashcardCount" min="1" max="30" value="10">
+            </div>
+
+            <button id="generateFlashcardsBtn" class="primary-action-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="14" height="10" rx="2"/><rect x="7" y="10" width="14" height="10" rx="2"/></svg>
+              Generate Flashcards
+            </button>
+          </div>
+
+          <p class="quiz-hint">Uses the full text of the selected document(s) — larger documents may take a few seconds.</p>
+        </section>
+
+        <section class="panel" id="flashcardStudyPanel" aria-label="Flashcard study area" hidden>
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> Study</h3>
+            <button id="regenerateFlashcardsBtn" class="ghost-btn">Start Over</button>
+          </div>
+
+          <div class="flashcard-stage">
+
+            <div class="flashcard-progress">
+              <span id="flashcardProgressText">1 / 10</span>
+            </div>
+
+            <div class="flashcard" id="flashcard">
+              <div class="flashcard-inner" id="flashcardInner">
+                <div class="flashcard-face flashcard-front">
+                  <span class="flashcard-label">Term</span>
+                  <p id="flashcardTerm"></p>
+                  <span class="flashcard-flip-hint">Click to flip</span>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                  <span class="flashcard-label">Definition</span>
+                  <p id="flashcardDefinition"></p>
+                  <span class="flashcard-flip-hint">Click to flip back</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard-nav">
+              <button id="flashcardPrevBtn" class="ghost-btn" aria-label="Previous card">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 6l-6 6 6 6"/></svg>
+                Prev
+              </button>
+              <button id="flashcardNextBtn" class="primary-action-btn">
+                Next
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+        <div id="flashcardEmptyState" class="quiz-empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="14" height="10" rx="2"/><rect x="7" y="10" width="14" height="10" rx="2"/></svg>
+          <p>No flashcards yet — pick a document above and hit Generate.</p>
+        </div>
+
+      </section>
+      <!-- ===================== /FLASHCARDS VIEW ===================== -->
+
+    </main>
+  </div>
+
+  <!-- ===================== SOURCES ===================== -->
+  <aside class="sources" aria-label="Sources and recent documents">
+    <div>
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        Sources
+      </h3>
+      <p class="sub">Citations for the latest answer</p>
+      <div id="sourceList">
+        <div class="sources-empty">Ask a question to see citations here.</div>
+      </div>
+    </div>
+
+    <div>
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg>
+        Recent Documents
+      </h3>
+      <p class="sub">Everything you've uploaded</p>
+      <div id="recentDocuments">
+        <div class="sources-empty">No documents yet.</div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/upload.js"></script>
+<script src="../js/chat.js"></script>
+<script src="../js/dashboard.js"></script>
+<script src="../js/quiz.js"></script>
+<script src="../js/flashcards.js"></script>
+<script>
+  // Theme toggle (visual only — persists nothing, respects no external storage)
+  (function(){
+    const toggle = document.getElementById("themeToggle");
+    if (toggle) {
+      toggle.addEventListener("click", function(){
+        const isOn = toggle.classList.toggle("on");
+        toggle.setAttribute("aria-pressed", isOn ? "true" : "false");
+        document.body.classList.toggle("dark-preview", isOn);
+        // Note: AskDocs currently ships one dark theme by design (matching
+        // the reference UI). This toggle is wired up and visually functional,
+        // but there's no separate light stylesheet to switch to yet.
+      });
+    }
+  })();
+
+  // Auto-grow the question textarea
+  (function(){
+    const el = document.getElementById("question");
+    if (el) {
+      el.addEventListener("input", function(){
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 140) + "px";
+      });
+    }
+  })();
+
+  // Quick Tools card actions
+  (function(){
+
+    const chatCard = document.getElementById("qtChat");
+    if (chatCard) {
+      chatCard.addEventListener("click", function(){
+        const chatNavLink = document.querySelector('.nav-link[data-view="chat-view"]');
+        if (chatNavLink) chatNavLink.click();
+        const input = document.getElementById("question");
+        if (input) setTimeout(() => input.focus(), 350);
+      });
+    }
+
+    const quizCard = document.getElementById("qtQuiz");
+    if (quizCard) {
+      quizCard.addEventListener("click", function(){
+        // Reuse the real nav link so active-state stays in sync,
+        // instead of duplicating the view-switch logic here.
+        const quizNavLink = document.querySelector('.nav-link[data-view="quiz-view"]');
+        if (quizNavLink) quizNavLink.click();
+      });
+    }
+
+    const uploadCard = document.getElementById("qtUpload");
+    if (uploadCard) {
+      uploadCard.addEventListener("click", function(){
+        if (typeof openUploadDialog === "function") openUploadDialog();
+      });
+    }
+
+    const flashcardsCard = document.getElementById("qtFlashcards");
+    if (flashcardsCard) {
+      flashcardsCard.addEventListener("click", function(){
+        const flashcardsNavLink = document.querySelector('.nav-link[data-view="flashcards-view"]');
+        if (flashcardsNavLink) flashcardsNavLink.click();
+      });
+    }
+
+  })();
+
+  // Profile loading, document loading, and event binding all happen
+  // in dashboard.js -> initDashboard() on DOMContentLoaded.
+</script>
+</body>
+</html>
