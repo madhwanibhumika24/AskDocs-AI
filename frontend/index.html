@@ -1,16 +1,354 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AskDocs | AI Document Workspace</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AskDocs | AI Document Workspace</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/landing.css">
+<style>
+/* ==========================================================
+   DESIGN SYSTEM
+   Same tokens as the AskDocs dashboard: a glossy white/off-white
+   page canvas, with dark glass panels floating on top of it. Text
+   inside those dark panels is a warm beige (not plain white) —
+   that's the "purple + beige" identity carried over from the app.
+   ========================================================== */
+:root{
+  --font-display:'Fraunces', serif;
+  --purple:#8B5CF6;
+  --purple-dark:#7C3AED;
+  --purple-deep:#D8CCFF;
+  --purple-light:rgba(139,92,246,.16);
+  --purple-100:rgba(139,92,246,.10);
+  --cyan:#2BBCC9;
+  --amber:#E0A030;
+  --green:#2ECC91;
+  --red:#EB5A50;
+
+  --ink:#FFFFFF;
+  --ink-soft:#D0D0D6;
+  --ink-faint:#9C9CA6;
+  --border:rgba(240,233,218,.10);
+  --border-soft:rgba(240,233,218,.06);
+
+  --page-ink:#241F17;
+  --page-ink-soft:#6E6656;
+
+  --radius-sm:10px;
+  --radius-md:14px;
+  --radius-lg:20px;
+  --radius-pill:999px;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --gutter:28px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body{
+  margin:0;
+  font-family:'Inter',-apple-system,sans-serif;
+  background:
+    radial-gradient(circle at 15% 8%, rgba(133,119,240,.12), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(139,92,246,.06), transparent 42%),
+    radial-gradient(circle at 50% 100%, rgba(224,69,59,.04), transparent 50%),
+    linear-gradient(160deg, #FFFFFF 0%, #F6F4EF 100%);
+  background-attachment:fixed;
+  color:var(--page-ink);
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+body::after{
+  content:"";position:fixed;inset:0;
+  background:linear-gradient(135deg, rgba(255,255,255,.7) 0%, transparent 28%, transparent 68%, rgba(255,255,255,.5) 100%);
+  pointer-events:none;z-index:0;
+}
+body::before{
+  content:"";position:fixed;inset:0;
+  background-image:radial-gradient(rgba(36,31,23,.05) 1px, transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;
+}
+
+a{text-decoration:none;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+
+.gradient-rule{width:48px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--purple-dark),var(--purple));margin:14px auto 0}
+.gradient-rule.left{margin:14px 0 0}
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+.primary-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 26px;border:none;border-radius:var(--radius-pill);
+  background:linear-gradient(90deg,var(--purple-dark),var(--purple));color:#fff;
+  font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;white-space:nowrap;
+  box-shadow:0 10px 26px -10px rgba(124,111,255,.55);
+  transition:filter .15s var(--ease), transform .15s var(--ease);
+}
+.primary-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.secondary-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 26px;border-radius:var(--radius-pill);
+  background:rgba(36,31,23,.04);border:1.5px solid rgba(36,31,23,.14);
+  color:var(--page-ink);font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;
+  transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.secondary-btn:hover{border-color:var(--purple);background:rgba(133,119,240,.06)}
+.login-btn{
+  padding:10px 18px;border-radius:var(--radius-pill);border:none;background:transparent;
+  color:var(--page-ink);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+}
+.login-btn:hover{color:var(--purple-dark)}
+
+/* ==========================================================
+   NAVBAR — floating glass bar, same language as the dashboard topbar
+   ========================================================== */
+.navbar{
+  position:sticky;top:var(--gutter);z-index:50;
+  max-width:1180px;margin:var(--gutter) auto 0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;border-radius:20px;
+  background:linear-gradient(180deg, rgba(48,42,60,.68) 0%, rgba(28,25,36,.75) 100%);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(240,233,218,.1);
+  box-shadow:0 24px 48px -26px rgba(0,0,0,.5);
+}
+.logo{
+  display:flex;align-items:center;gap:9px;
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:19px;color:var(--ink);
+}
+.logo::before{
+  content:"";width:26px;height:26px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#9C90FF,#6C5CE7 55%,#3B2FA8);
+  box-shadow:0 4px 14px -3px rgba(108,92,233,.6);
+}
+.navbar nav{display:flex;gap:26px}
+.navbar nav a{font-size:13.5px;font-weight:600;color:var(--ink-soft);transition:color .15s var(--ease)}
+.navbar nav a:hover{color:var(--ink)}
+.nav-buttons{display:flex;align-items:center;gap:10px}
+.navbar .login-btn{color:var(--ink-soft)}
+.navbar .login-btn:hover{color:var(--ink)}
+.navbar .primary-btn{padding:10px 20px;font-size:13.5px}
+
+@media(max-width:860px){
+  .navbar{flex-wrap:wrap;row-gap:12px;padding:14px 16px}
+  .navbar nav{
+    order:3;width:100%;
+    display:flex;gap:8px;
+    overflow-x:auto;
+    padding-top:10px;
+    border-top:1px solid rgba(240,233,218,.08);
+    scrollbar-width:none;
+  }
+  .navbar nav::-webkit-scrollbar{display:none}
+  .navbar nav a{
+    flex-shrink:0;white-space:nowrap;
+    padding:7px 13px;border-radius:var(--radius-pill);
+    background:rgba(240,233,218,.06);
+    border:1px solid rgba(240,233,218,.08);
+  }
+}
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+.hero{
+  max-width:1180px;margin:0 auto;padding:90px 28px 70px;
+  display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;
+  position:relative;z-index:1;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 16px;border-radius:var(--radius-pill);
+  background:rgba(133,119,240,.08);border:1px solid rgba(133,119,240,.25);
+  color:var(--purple-dark);font-size:12px;font-weight:700;letter-spacing:.02em;
+  margin-bottom:22px;
+}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--purple)}
+
+.hero-left h1{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:56px;line-height:1.05;letter-spacing:-.01em;margin:0 0 22px;color:var(--page-ink);
+}
+.hero-left p{
+  font-size:16px;line-height:1.7;color:var(--page-ink-soft);max-width:480px;margin:0 0 34px;
+}
+.hero-buttons{display:flex;gap:14px;flex-wrap:wrap}
+
+.hero-right{position:relative}
+.hero-card{
+  border-radius:22px;padding:30px 28px;
+  background:linear-gradient(180deg, rgba(48,42,60,.7) 0%, rgba(28,25,36,.78) 100%);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(240,233,218,.1);
+  box-shadow:0 40px 70px -30px rgba(0,0,0,.5);
+  position:relative;overflow:hidden;
+}
+.hero-card::after{
+  content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle, rgba(133,119,240,.22), transparent 70%);pointer-events:none;
+}
+.hero-card h3{
+  font-family:var(--font-display);font-style:italic;font-weight:600;font-size:19px;
+  margin:0 0 12px;color:var(--ink);position:relative;z-index:1;
+}
+.hero-card p{
+  font-size:13.5px;line-height:1.7;color:var(--ink-soft);margin:0 0 18px;position:relative;z-index:1;
+}
+.citation{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 14px;border-radius:var(--radius-pill);
+  background:var(--purple-light);border:1px solid rgba(133,119,240,.3);
+  color:var(--purple-deep);font-size:12px;font-weight:700;position:relative;z-index:1;
+}
+.citation::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--purple-deep)}
+
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;padding-top:60px}
+  .hero-left h1{font-size:42px}
+}
+
+/* ==========================================================
+   SECTION SHELL
+   ========================================================== */
+section.block{max-width:1180px;margin:0 auto;padding:70px 28px;position:relative;z-index:1}
+.section-head{text-align:center;margin-bottom:44px}
+.section-head h2{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:34px;margin:0;color:var(--page-ink);letter-spacing:-.01em;
+}
+
+/* ==========================================================
+   FEATURES
+   ========================================================== */
+.feature-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:16px}
+.feature-card{
+  border-radius:18px;padding:24px 22px;
+  background:linear-gradient(160deg, rgba(48,42,60,.74), rgba(28,25,36,.84));
+  backdrop-filter:blur(20px) saturate(150%);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  border:1px solid rgba(133,119,240,.22);
+  box-shadow:0 20px 40px -26px rgba(0,0,0,.45);
+  transition:transform .18s var(--ease), border-color .18s var(--ease);
+}
+.feature-card:hover{transform:translateY(-4px);border-color:rgba(133,119,240,.5)}
+.feature-card h3{
+  font-size:15.5px;font-weight:800;margin:0 0 8px;color:var(--ink);
+}
+.feature-card p{font-size:13.5px;font-weight:500;line-height:1.65;color:var(--ink-soft);margin:0}
+
+@media(max-width:860px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.feature-grid{grid-template-columns:1fr}}
+
+/* ==========================================================
+   PDF TOOLKIT
+   ========================================================== */
+.tool-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:12px}
+.tool-grid div{
+  padding:16px 18px;border-radius:14px;
+  background:rgba(36,31,23,.035);border:1px solid rgba(36,31,23,.1);
+  font-size:13.5px;font-weight:700;color:var(--page-ink);
+  transition:border-color .15s var(--ease), background .15s var(--ease), transform .15s var(--ease);
+}
+.tool-grid div:hover{border-color:var(--purple);background:rgba(133,119,240,.06);transform:translateY(-2px)}
+
+@media(max-width:860px){.tool-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.tool-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ==========================================================
+   HOW IT WORKS
+   ========================================================== */
+/* ==========================================================
+   WHY ASKDOCS
+   ========================================================== */
+.why-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:16px}
+.why-card{
+  padding:26px 22px;border-radius:18px;text-align:left;
+  background:linear-gradient(160deg, rgba(48,42,60,.74), rgba(28,25,36,.84));
+  backdrop-filter:blur(20px) saturate(150%);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  border:1px solid rgba(133,119,240,.22);
+  transition:transform .18s var(--ease), border-color .18s var(--ease);
+}
+.why-card:hover{transform:translateY(-4px);border-color:rgba(139,92,246,.5)}
+.why-icon{
+  width:42px;height:42px;border-radius:12px;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--purple-light);color:var(--purple-deep);
+}
+.why-icon svg{width:20px;height:20px}
+.why-card h3{font-size:15px;font-weight:800;margin:0 0 8px;color:var(--ink)}
+.why-card p{font-size:13.5px;font-weight:500;line-height:1.65;color:var(--ink-soft);margin:0}
+
+@media(max-width:900px){.why-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.why-grid{grid-template-columns:1fr}}
+
+/* ==========================================================
+   FAQ
+   ========================================================== */
+.faq{max-width:760px}
+.faq details{
+  border-radius:14px;padding:18px 22px;margin-bottom:12px;
+  background:rgba(36,31,23,.03);border:1px solid rgba(36,31,23,.1);
+  transition:border-color .15s var(--ease);
+}
+.faq details[open]{border-color:var(--purple)}
+.faq summary{
+  font-size:14.5px;font-weight:700;color:var(--page-ink);cursor:pointer;
+  list-style:none;display:flex;justify-content:space-between;align-items:center;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"+";font-size:20px;font-weight:400;color:var(--purple);flex-shrink:0;margin-left:16px;
+  transition:transform .2s var(--ease);
+}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{font-size:13.5px;line-height:1.7;color:var(--page-ink-soft);margin:14px 0 0}
+
+/* ==========================================================
+   CTA
+   ========================================================== */
+.cta{
+  max-width:1180px;margin:0 auto 70px;padding:60px 40px;text-align:center;
+  border-radius:26px;position:relative;z-index:1;overflow:hidden;
+  background:linear-gradient(150deg, rgba(48,42,60,.72) 0%, rgba(28,25,36,.82) 100%);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(240,233,218,.1);
+  box-shadow:0 40px 70px -30px rgba(0,0,0,.5);
+}
+.cta::after{
+  content:"";position:absolute;right:-100px;top:-100px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle, rgba(133,119,240,.25), transparent 70%);pointer-events:none;
+}
+.cta h2{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:32px;margin:0 0 14px;color:var(--ink);position:relative;z-index:1;
+}
+.cta p{font-size:14.5px;color:var(--ink-soft);margin:0 0 28px;position:relative;z-index:1}
+.cta .primary-btn{position:relative;z-index:1}
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+footer{
+  text-align:center;padding:40px 28px 50px;position:relative;z-index:1;
+}
+footer h3{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:20px;margin:0 0 6px;color:var(--page-ink);
+}
+footer p{font-size:13px;color:var(--page-ink-soft);margin:0 0 14px}
+footer small{font-size:11.5px;color:var(--ink-faint)}
+</style>
 </head>
 <body>
 
@@ -20,7 +358,7 @@
     <nav>
         <a href="#features">Features</a>
         <a href="#tools">PDF Tools</a>
-        <a href="#how">How It Works</a>
+        <a href="#why">Why AskDocs</a>
         <a href="#faq">FAQ</a>
     </nav>
 
@@ -49,7 +387,7 @@
         <p>
             Upload PDFs, DOCX and PPTs. Chat with your documents,
             generate summaries, notes, quizzes, flashcards and
-            use powerful PDF tools—all in one place.
+            use powerful PDF tools — all in one place.
         </p>
 
         <div class="hero-buttons">
@@ -57,7 +395,7 @@
                 <button class="primary-btn">Get Started</button>
             </a>
 
-            <a href="#how">
+            <a href="#why">
                 <button class="secondary-btn">Learn More</button>
             </a>
         </div>
@@ -74,27 +412,51 @@
             </p>
 
             <div class="citation">
-                Source: LangChain.pdf • Page 12
+                Source: LangChain.pdf · Page 12
             </div>
         </div>
     </div>
 </section>
 
-<section id="features" class="features">
-    <h2>Everything You Need</h2>
+<section id="features" class="block">
+    <div class="section-head">
+        <h2>Everything You Need</h2>
+        <div class="gradient-rule"></div>
+    </div>
 
     <div class="feature-grid">
-        <div class="feature-card"><h3>AI Chat</h3><p>Ask questions from documents.</p></div>
-        <div class="feature-card"><h3>Summaries</h3><p>Generate chapter-wise summaries.</p></div>
-        <div class="feature-card"><h3>Notes</h3><p>Create structured study notes.</p></div>
-        <div class="feature-card"><h3>Flashcards</h3><p>Generate revision flashcards.</p></div>
-        <div class="feature-card"><h3>Quiz</h3><p>Create AI-powered quizzes.</p></div>
-        <div class="feature-card"><h3>Citations</h3><p>Every answer links to its source.</p></div>
+        <div class="feature-card">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h13l3 3v13H4z"/><path d="M8 10h8M8 14h5"/></svg></div>
+            <h3>AI Chat</h3><p>Ask questions from documents and get answers grounded in your own files.</p>
+        </div>
+        <div class="feature-card">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></div>
+            <h3>Summaries</h3><p>Turn long documents into clear, readable summaries in seconds.</p>
+        </div>
+        <div class="feature-card">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div>
+            <h3>Notes</h3><p>Create structured study notes with headings and key points.</p>
+        </div>
+        <div class="feature-card">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="14" height="10" rx="2"/><rect x="7" y="10" width="14" height="10" rx="2"/></svg></div>
+            <h3>Flashcards</h3><p>Generate revision flashcards straight from your material.</p>
+        </div>
+        <div class="feature-card">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <h3>Quiz</h3><p>Create AI-powered quizzes to test what you actually remember.</p>
+        </div>
+        <div class="feature-card">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg></div>
+            <h3>Citations</h3><p>Every answer links back to the exact page it came from.</p>
+        </div>
     </div>
 </section>
 
-<section id="tools" class="pdf-tools">
-    <h2>PDF Toolkit</h2>
+<section id="tools" class="block">
+    <div class="section-head">
+        <h2>PDF Toolkit</h2>
+        <div class="gradient-rule"></div>
+    </div>
 
     <div class="tool-grid">
         <div>Merge PDF</div>
@@ -112,59 +474,103 @@
     </div>
 </section>
 
-<section id="how" class="workflow">
-    <h2>How AskDocs Works</h2>
+<section id="why" class="block">
+    <div class="section-head">
+        <h2>Why AskDocs</h2>
+        <div class="gradient-rule"></div>
+    </div>
 
-    <div class="steps">
-        <div><h3>Upload</h3></div>
-        <span>→</span>
-        <div><h3>Chunking</h3></div>
-        <span>→</span>
-        <div><h3>Embeddings</h3></div>
-        <span>→</span>
-        <div><h3>Retrieval</h3></div>
-        <span>→</span>
-        <div><h3>Gemini AI</h3></div>
+    <div class="why-grid">
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <h3>Grounded Answers</h3>
+            <p>Every response is backed by a citation to the exact page it came from — no guessing, no invented facts.</p>
+        </div>
+
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <h3>Private by Design</h3>
+            <p>Your documents stay yours. Nothing you upload is used to train external models.</p>
+        </div>
+
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/></svg>
+            </div>
+            <h3>Fast & Reliable</h3>
+            <p>Powered by Gemini and a production-grade retrieval pipeline, built for quick, accurate answers.</p>
+        </div>
+
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12L3 7l9-5 9 5-9 5z"/></svg>
+            </div>
+            <h3>Built for Study</h3>
+            <p>Purpose-built tools for quizzes, flashcards, and notes — not just a chat window bolted onto a PDF viewer.</p>
+        </div>
     </div>
 </section>
 
-<section class="tech-stack">
-    <h2>Built With</h2>
-
-    <div class="tech-grid">
-        <span>Python</span>
-        <span>FastAPI</span>
-        <span>LangChain</span>
-        <span>Gemini</span>
-        <span>ChromaDB</span>
-        <span>HTML</span>
-        <span>CSS</span>
-        <span>JavaScript</span>
+<section id="faq" class="block">
+    <div class="section-head">
+        <h2>Frequently Asked Questions</h2>
+        <div class="gradient-rule"></div>
     </div>
-</section>
 
-<section id="faq" class="faq">
-    <h2>Frequently Asked Questions</h2>
+    <div class="faq">
+        <details>
+            <summary>Which file types are supported?</summary>
+            <p>PDF, DOCX and PPTX.</p>
+        </details>
 
-    <details>
-        <summary>Which file types are supported?</summary>
-        <p>PDF, DOCX and PPTX.</p>
-    </details>
+        <details>
+            <summary>Does AskDocs provide citations?</summary>
+            <p>Yes. Every AI answer includes references from your uploaded documents, down to the exact page.</p>
+        </details>
 
-    <details>
-        <summary>Does AskDocs provide citations?</summary>
-        <p>Yes. Every AI answer includes references from your uploaded documents.</p>
-    </details>
+        <details>
+            <summary>Can I upload multiple documents?</summary>
+            <p>Yes. Organize them inside your workspace and scope chat, quizzes, and notes to a specific file whenever you want.</p>
+        </details>
 
-    <details>
-        <summary>Can I upload multiple documents?</summary>
-        <p>Yes. Organize them inside your workspace.</p>
-    </details>
+        <details>
+            <summary>Can the AI make mistakes?</summary>
+            <p>Yes — AskDocs is grounded in your documents to minimize errors, but AI-generated answers can still be wrong. Always check the cited source before relying on an answer for something important.</p>
+        </details>
+
+        <details>
+            <summary>Is my data kept private?</summary>
+            <p>Your documents are used only to answer your own questions and generate your own study materials. They're never used to train external models or shared with other users.</p>
+        </details>
+
+        <details>
+            <summary>How large a document can I upload?</summary>
+            <p>AskDocs is built to handle everything from a single-page handout to full textbooks and lecture packs. Larger documents may take a little longer to process.</p>
+        </details>
+
+        <details>
+            <summary>Do I need to install anything?</summary>
+            <p>No. AskDocs runs entirely in your browser — upload a file and start asking questions, no downloads or extensions required.</p>
+        </details>
+
+        <details>
+            <summary>What's the difference between Chat, Notes, and Quiz?</summary>
+            <p>Chat answers specific questions with citations. Notes turns a document into an organized outline you can review. Quiz and Flashcards generate practice material to test what you've actually retained.</p>
+        </details>
+
+        <details>
+            <summary>Is AskDocs free to use?</summary>
+            <p>You can get started right away — create an account and start uploading documents in minutes.</p>
+        </details>
+    </div>
 </section>
 
 <section class="cta">
     <h2>Ready to Transform Your Documents?</h2>
-
     <p>Sign in and start building your AI-powered document workspace.</p>
 
     <a href="pages/register.html">
@@ -178,6 +584,5 @@
     <small>© 2026 AskDocs. All rights reserved.</small>
 </footer>
 
-<script src="js/landing.js"></script>
 </body>
 </html>

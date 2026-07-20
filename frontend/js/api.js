@@ -51,6 +51,25 @@ async function apiRequest(
 
     const data = await response.json();
 
+    if (response.status === 401) {
+
+        // The token is missing, invalid, or expired — no matter which
+        // feature triggered this (chat, documents, quiz, whatever),
+        // the right move is always the same: send the user back to
+        // log in again, instead of showing a confusing error message
+        // in whatever part of the UI happened to make the request.
+        console.warn("[api.js] Session expired — redirecting to login.");
+
+        localStorage.removeItem("access_token");
+
+        window.location.href = "login.html";
+
+        // Stop here — nothing after this point should run, since the
+        // page is about to navigate away.
+        return new Promise(() => {});
+
+    }
+
     if (!response.ok) {
 
         throw new Error(
@@ -156,6 +175,18 @@ async function uploadDocuments(files) {
 
     const data = await response.json();
 
+    if (response.status === 401) {
+
+        console.warn("[api.js] Session expired — redirecting to login.");
+
+        localStorage.removeItem("access_token");
+
+        window.location.href = "login.html";
+
+        return new Promise(() => {});
+
+    }
+
     if (!response.ok) {
 
         throw new Error(
@@ -185,6 +216,64 @@ async function generateQuiz(documentId, numQuestions) {
         {
             document_id: documentId || null,
             num_questions: numQuestions
+        }
+
+    );
+
+}
+
+/* ==========================================================
+   TEACH IT BACK
+========================================================== */
+
+async function getTeachBackPrompt(documentId) {
+
+    return await apiRequest(
+
+        "/teach-back/prompt",
+
+        "POST",
+
+        {
+            document_id: documentId || null
+        }
+
+    );
+
+}
+
+async function evaluateTeachBack(documentId, concept, studentExplanation) {
+
+    return await apiRequest(
+
+        "/teach-back/evaluate",
+
+        "POST",
+
+        {
+            document_id: documentId || null,
+            concept: concept,
+            student_explanation: studentExplanation
+        }
+
+    );
+
+}
+
+/* ==========================================================
+   NOTES
+========================================================== */
+
+async function generateNotes(documentId) {
+
+    return await apiRequest(
+
+        "/notes/generate",
+
+        "POST",
+
+        {
+            document_id: documentId || null
         }
 
     );
@@ -255,6 +344,11 @@ window.uploadDocuments = uploadDocuments;
 window.generateQuiz = generateQuiz;
 
 window.generateFlashcards = generateFlashcards;
+
+window.generateNotes = generateNotes;
+
+window.getTeachBackPrompt = getTeachBackPrompt;
+window.evaluateTeachBack = evaluateTeachBack;
 
 window.getDocuments = getDocuments;
 

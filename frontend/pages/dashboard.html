@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>AskDocs — Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='6' y1='8' x2='48' y2='56'%3E%3Cstop offset='0' stop-color='%238B7CFF'/%3E%3Cstop offset='.55' stop-color='%236C5CE9'/%3E%3Cstop offset='1' stop-color='%233B2FA8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M16 8h20l12 12v30a6 6 0 01-6 6H16a6 6 0 01-6-6V14a6 6 0 016-6z' fill='url(%23g)'/%3E%3Cpath d='M20 24h18M20 31h18' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' opacity='.55'/%3E%3Cpath d='M22 40c0-3 2.5-4 4.5-5.2 1.6-1 2.5-1.8 2.5-3.3 0-2-1.6-3-3.5-3-1.6 0-3 .8-3.7 2.2' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='25.5' cy='44.5' r='1.6' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:ital,wght@0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
@@ -11,40 +12,60 @@
 /* ==========================================================
    TOKENS
    ========================================================== */
+/* ==========================================================
+   DESIGN SYSTEM — "Floating Glass" layout
+
+   The old layout had the sidebar, topbar, and sources panel all
+   touching the edges of the browser window, like flat tiles glued
+   together. This version gives every major panel its own rounded
+   corners, its own soft shadow, and a gap of space (--gutter) around
+   it — so the whole dashboard reads as a set of floating glass cards
+   over a quiet background, instead of one flat surface.
+
+   Everything that controls that spacing lives in --gutter below.
+   Change that one number and the whole layout's breathing room
+   scales with it.
+   ========================================================== */
 :root{
   --font-display:'Fraunces', serif;
   --purple:#7C6FFF;
-  --purple-dark:#6255E8;
-  --purple-deep:#B8AFFF;
-  --purple-light:rgba(124,111,255,.16);
-  --purple-100:rgba(124,111,255,.10);
-  --cyan:#2DD4EE;
-  --amber:#F5A623;
-  --green:#34D399;
-  --red:#F0554B;
+  --purple-dark:#5B4FE9;
+  --purple-deep:#4A3FD6;
+  --purple-light:rgba(124,111,255,.10);
+  --purple-100:rgba(124,111,255,.06);
+  --cyan:#1AA6B8;
+  --amber:#C97A0E;
+  --green:#189A63;
+  --red:#D8433A;
 
-  --ink:#F1F2FA;
-  --ink-soft:#9FA2C0;
-  --ink-faint:#767AA0;
-  --border:rgba(255,255,255,.09);
-  --border-soft:rgba(255,255,255,.06);
-  --bg:#0A0C18;
-  --white:#12142A;
-  --surface:#12142A;
-  --surface-2:#171A38;
+  /* One text-color family now, used everywhere — every surface in
+     this theme is light (white cards on a light gray page), so
+     there's no more "light text on dark panel" vs "dark text on
+     light canvas" distinction to get wrong. This is the single
+     biggest fix over the old system. */
+  --ink:#18181B;
+  --ink-soft:#52525B;
+  --ink-faint:#8B8A97;
+  --border:#E9E8EF;
+  --border-soft:#F0EFF3;
+  --bg:#F4F3F7;
+  --white:#FFFFFF;
+  --surface:#FFFFFF;
+  --surface-2:#FAFAFB;
 
   --sidebar-w:264px;
-  --sources-w:296px;
-  --topbar-h:68px;
+  --sources-w:300px;
+  --topbar-h:72px;
+  --gutter:42px;
 
   --radius-sm:10px;
   --radius-md:14px;
   --radius-lg:20px;
   --radius-pill:999px;
 
-  --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 1px 1px rgba(0,0,0,.2);
-  --shadow-md:0 12px 32px -14px rgba(0,0,0,.55);
-  --shadow-lg:0 28px 56px -20px rgba(0,0,0,.65);
+  --shadow-sm:0 1px 2px rgba(24,24,27,.06), 0 1px 1px rgba(24,24,27,.04);
+  --shadow-md:0 12px 28px -14px rgba(24,24,27,.14);
+  --shadow-lg:0 24px 48px -20px rgba(24,24,27,.18);
 
   --ease:cubic-bezier(.4,0,.2,1);
 }
@@ -62,25 +83,10 @@ html{-webkit-text-size-adjust:100%}
 body{
   margin:0;
   font-family:'Inter',-apple-system,sans-serif;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(124,111,255,.09), transparent 40%),
-    radial-gradient(circle at 88% 18%, rgba(45,212,238,.06), transparent 38%),
-    var(--bg);
-  background-attachment:fixed;
+  background:var(--bg);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
   position:relative;
-}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
-  background-size:26px 26px;
-  pointer-events:none;
-  z-index:0;
-  opacity:.32;
 }
 
 ::selection{background:var(--purple-light);color:var(--purple-deep)}
@@ -99,63 +105,54 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 /* ==========================================================
    LAYOUT SHELL
    ========================================================== */
+/* The old layout put navigation in a tall LEFT SIDEBAR (a vertical
+   list of links running down the side of the screen). This version
+   turns that 90 degrees: there's no sidebar at all anymore — instead,
+   one floating header sits across the TOP of the page, with the
+   navigation links laid out in a horizontal, scrollable row underneath
+   the search/profile bar. Everything below the header is just two
+   columns: the main content, and the sources panel on the right. */
 .shell{
   display:grid;
-  grid-template-columns:var(--sidebar-w) 1fr var(--sources-w);
+  grid-template-columns:var(--sidebar-w) 1fr;
+  gap:var(--gutter);
   min-height:100vh;
+  padding:var(--gutter);
   position:relative;
   z-index:1;
 }
 
 /* ==========================================================
    SIDEBAR
+   A floating glass card: rounded on all corners, sitting with
+   breathing room around it instead of touching the screen edge.
    ========================================================== */
 .sidebar{
   position:sticky;
-  top:0;
-  height:100vh;
-  background:linear-gradient(180deg, rgba(18,20,42,.92) 0%, rgba(10,12,24,.96) 100%);
-  backdrop-filter:blur(20px);
-  color:#C7C6DA;
+  top:var(--gutter);
+  height:calc(100vh - (var(--gutter) * 2));
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:26px;
+  box-shadow:0 4px 24px -12px rgba(24,24,27,.08);
   display:flex;
   flex-direction:column;
-  padding:22px 16px;
-  border-right:1px solid var(--border);
+  padding:24px 18px;
 }
 
 .brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
+  display:flex;align-items:center;gap:9px;
   padding:6px 8px 22px;
 }
 .brand-mark{
-  width:32px;height:32px;border-radius:9px;flex-shrink:0;
-  background:linear-gradient(135deg,#9C90FF,#7C6FFF 55%,#4A3FD6);
+  width:30px;height:30px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 18px -4px rgba(124,111,255,.65);
+  filter:drop-shadow(0 4px 14px rgba(108,92,233,.5));
 }
 .brand-name{
   font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:20px;color:#fff;letter-spacing:0;
+  font-size:20px;color:var(--ink);letter-spacing:0;
 }
-.brand-name sup{
-  display:block;font-size:9.5px;font-weight:600;color:#8B87A8;
-  letter-spacing:.09em;text-transform:uppercase;margin-top:1px;
-}
-
-.upload-btn{
-  width:100%;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:12px;border:none;border-radius:var(--radius-sm);
-  background:linear-gradient(90deg,var(--purple),var(--cyan));color:#fff;
-  font-size:14px;font-weight:700;cursor:pointer;
-  margin-bottom:20px;
-  box-shadow:0 6px 18px -6px rgba(124,111,255,.5);
-  transition:filter .15s var(--ease), transform .1s var(--ease);
-}
-.upload-btn:hover{filter:brightness(1.08)}
-.upload-btn:active{transform:translateY(1px) scale(.99)}
 
 .sidebar-scroll{
   flex:1;
@@ -164,45 +161,30 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   scrollbar-width:thin;
 }
 .sidebar-scroll::-webkit-scrollbar{width:5px}
-.sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(24,24,27,.14);border-radius:3px}
 
 .nav-group{margin-bottom:20px}
 .nav-group h4{
   font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:#565277;padding:0 10px;margin:0 0 8px;
+  color:var(--ink-faint);padding:0 10px;margin:0 0 8px;
 }
 .nav-link{
   display:flex;align-items:center;gap:11px;
   padding:9.5px 10px;border-radius:9px;
-  font-size:14px;font-weight:600;color:#C7C6DA;
+  font-size:14px;font-weight:600;color:var(--ink-soft);
   text-decoration:none;cursor:pointer;border:none;background:none;width:100%;text-align:left;
   transition:background .15s var(--ease), color .15s var(--ease);
   margin-bottom:2px;
   position:relative;
 }
 .nav-link svg{width:17px;height:17px;flex-shrink:0;opacity:.8}
-.nav-link:hover{background:rgba(255,255,255,.06);color:#fff}
-.nav-link.active{background:rgba(91,79,233,.28);color:#fff}
-.nav-link.active svg{opacity:1;color:#B3A9FF}
+.nav-link:hover{background:rgba(24,24,27,.05);color:var(--ink)}
+.nav-link.active{background:linear-gradient(90deg, rgba(133,119,240,.28), rgba(43,188,201,.14));color:var(--ink)}
+.nav-link.active svg{opacity:1;color:var(--purple-deep)}
 .nav-link.active::before{
   content:"";position:absolute;left:-16px;top:50%;transform:translateY(-50%);
-  width:3px;height:18px;border-radius:0 4px 4px 0;background:#8A7EFF;
+  width:3px;height:18px;border-radius:0 4px 4px 0;background:var(--purple);
 }
-
-.sidebar-footer{
-  padding-top:12px;
-  border-top:1px solid rgba(255,255,255,.08);
-  flex-shrink:0;
-}
-.logout-btn{
-  display:flex;align-items:center;justify-content:center;gap:9px;
-  width:100%;padding:11px;
-  background:transparent;border:1.5px solid rgba(255,255,255,.12);
-  border-radius:var(--radius-sm);color:#C7C6DA;
-  font-size:13.5px;font-weight:700;cursor:pointer;
-  transition:background .15s var(--ease), border-color .15s var(--ease), color .15s var(--ease);
-}
-.logout-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);color:#fff}
 
 /* ==========================================================
    MAIN COLUMN
@@ -211,20 +193,47 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   display:flex;
   flex-direction:column;
   min-width:0;
-  min-height:100vh;
+  gap:var(--gutter);
 }
 
-/* ---- topbar ---- */
+/* ---- topbar ----
+   Same floating glass language as the sidebar and sources panel. */
 .topbar{
-  position:sticky;top:0;z-index:20;
+  position:sticky;top:var(--gutter);z-index:20;
   height:var(--topbar-h);
-  display:flex;align-items:center;gap:16px;
-  padding:0 28px;
-  background:rgba(10,12,24,.72);
-  backdrop-filter:blur(14px) saturate(160%);
-  -webkit-backdrop-filter:blur(14px) saturate(160%);
-  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+  padding:0 22px;
+  border-radius:20px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 4px 20px -12px rgba(24,24,27,.08);
 }
+.topbar-spacer{flex:1}
+
+.upload-btn-inline{
+  display:inline-flex;align-items:center;gap:7px;flex-shrink:0;
+  padding:9px 16px;border:none;border-radius:var(--radius-pill);
+  background:linear-gradient(90deg,var(--purple),var(--cyan));color:#fff;
+  font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+  box-shadow:0 6px 16px -6px rgba(124,111,255,.5);
+  transition:filter .15s var(--ease), transform .1s var(--ease);
+}
+.upload-btn-inline:hover{filter:brightness(1.08)}
+.upload-btn-inline:active{transform:scale(.97)}
+
+.logout-btn-glass{
+  display:inline-flex;align-items:center;gap:7px;flex-shrink:0;
+  padding:9px 16px;border-radius:var(--radius-pill);
+  background:rgba(224,69,59,.12);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1.5px solid rgba(224,69,59,.35);
+  color:var(--red);font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;white-space:nowrap;
+  transition:background .15s var(--ease), border-color .15s var(--ease), transform .1s var(--ease);
+}
+.logout-btn-glass:hover{background:rgba(224,69,59,.2);border-color:rgba(224,69,59,.5)}
+.logout-btn-glass:active{transform:scale(.97)}
 
 .search-wrap{
   flex:1;
@@ -249,7 +258,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   box-shadow:0 0 0 4px rgba(91,79,233,.12);
 }
 
-.topbar-spacer{flex:1}
 
 .icon-btn{
   position:relative;
@@ -264,25 +272,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 .icon-btn .dot{
   position:absolute;top:8px;right:8px;
   width:7px;height:7px;border-radius:50%;
-  background:var(--red);border:1.5px solid var(--surface);
+  background:var(--red);border:1.5px solid #fff;
 }
 
-.theme-toggle{
-  width:44px;height:26px;border-radius:var(--radius-pill);
-  background:var(--purple-light);border:1.5px solid var(--border);
-  cursor:pointer;position:relative;flex-shrink:0;
-  transition:background .2s var(--ease);
-}
-.theme-toggle .knob{
-  position:absolute;top:2px;left:2px;
-  width:19px;height:19px;border-radius:50%;
-  background:var(--purple);
-  display:flex;align-items:center;justify-content:center;
-  transition:transform .25s var(--ease);
-  box-shadow:var(--shadow-sm);
-}
-.theme-toggle .knob svg{width:11px;height:11px;color:#fff}
-.theme-toggle.on .knob{transform:translateX(18px)}
 
 .profile-pill{
   display:flex;align-items:center;gap:9px;
@@ -303,7 +295,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 /* ---- workspace body ---- */
 .workspace{
   flex:1;
-  padding:26px 28px 28px;
+  width:100%;
+  max-width:1180px;
+  margin:0 auto;
+  padding:0 0 var(--gutter);
   display:flex;
   flex-direction:column;
   min-width:0;
@@ -313,12 +308,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 .welcome-card{
   position:relative;
   overflow:hidden;
-  background:var(--surface);
-  border:1px solid var(--border);
+  background:linear-gradient(135deg,#8577F0,var(--purple-dark));
+  border:none;
   border-radius:var(--radius-lg);
-  padding:26px 30px;
-  margin-bottom:20px;
-  color:var(--ink);
+  padding:34px 36px;
+  box-shadow:0 20px 40px -20px rgba(91,79,233,.4);
+  color:#fff;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -333,13 +328,16 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 }
 .welcome-text h1{
   font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:28px;margin:0 0 5px;letter-spacing:0;line-height:1.15;
+  font-size:36px;margin:0 0 6px;letter-spacing:0;line-height:1.1;
 }
 
 .gradient-rule{
   width:44px;height:3px;border-radius:2px;
   background:linear-gradient(90deg,var(--purple),var(--cyan));
   margin:8px 0 12px;
+}
+.welcome-card .gradient-rule{
+  background:rgba(255,255,255,.6);
 }
 .welcome-text p{
   font-size:13.5px;margin:0;color:rgba(255,255,255,.78);max-width:440px;
@@ -360,13 +358,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:14px;
-  margin-bottom:20px;
 }
 .stat-card{
   background:var(--surface);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius-md);
-  padding:17px 18px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  box-shadow:0 4px 16px -10px rgba(24,24,27,.08);
+  padding:22px 22px;
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
@@ -381,7 +379,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   font-size:11.5px;font-weight:700;color:var(--ink-soft);
   margin:0 0 6px;text-transform:uppercase;letter-spacing:.03em;
 }
-.stat-info h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:28px;margin:0;letter-spacing:0}
+.stat-info h2{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:32px;margin:0;letter-spacing:0}
 .stat-info .trend{
   font-size:11px;font-weight:700;color:var(--green);margin-top:5px;display:block;
 }
@@ -398,8 +396,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 /* generic card */
 .panel{
   background:var(--surface);
-  border:1.5px solid var(--border);
+  border:1px solid var(--border);
   border-radius:var(--radius-lg);
+  box-shadow:0 4px 20px -12px rgba(24,24,27,.08);
   display:flex;
   flex-direction:column;
   flex:1;
@@ -415,7 +414,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 #quizSetupPanel,
 #quizResultsPanel,
 #flashcardSetupPanel,
-#flashcardStudyPanel{
+#flashcardStudyPanel,
+#documentsPanel,
+#notesSetupPanel,
+#notesResultsPanel{
   flex:none;
   min-height:0;
   height:auto;
@@ -423,7 +425,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 }
 .panel-head{
   display:flex;align-items:center;justify-content:space-between;
-  padding:16px 20px;
+  padding:20px 24px;
   border-bottom:1px solid var(--border-soft);
   flex-shrink:0;
 }
@@ -488,7 +490,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   animation:chipIn .25s var(--ease);
 }
 .document-chip:hover{border-color:rgba(124,111,255,.4);background:var(--purple-100)}
-.document-chip .chip-icon{font-size:13px;line-height:1}
+.document-chip .chip-icon{display:inline-flex;align-items:center;color:var(--purple)}
 .document-chip button{
   width:18px;height:18px;border-radius:50%;border:none;
   background:var(--border-soft);color:var(--ink-soft);
@@ -514,7 +516,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 .chat-body::-webkit-scrollbar{width:6px}
 .chat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-.message{display:flex;gap:10px;max-width:78%;animation:msgIn .25s var(--ease)}
+.message{display:flex;gap:10px;max-width:min(78%, 620px);animation:msgIn .25s var(--ease)}
 @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 .message.ai{align-self:flex-start}
@@ -526,7 +528,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   font-size:12px;font-weight:800;color:#fff;margin-top:2px;
 }
 .message.ai .msg-avatar{background:linear-gradient(135deg,#8A7EFF,#4A3FD6)}
-.message.user .msg-avatar{background:#3A3550}
+.message.user .msg-avatar{background:#4A4258}
 
 .bubble{
   padding:12px 16px;
@@ -616,16 +618,31 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 /* ==========================================================
    RIGHT PANEL — SOURCES
    ========================================================== */
+/* ==========================================================
+   RIGHT PANEL — SOURCES
+   Same floating glass treatment as the sidebar — rounded on
+   all corners, its own blur and shadow, sitting with real
+   space around it instead of touching the screen edge.
+   ========================================================== */
 .sources{
-  position:sticky;top:0;
-  height:100vh;
-  background:var(--surface);
-  border-left:1px solid var(--border);
-  padding:24px 18px 18px;
+  /* Citations hidden per request — backend still returns them,
+     this is purely a display choice. Delete this line to bring
+     the panel back. */
+  display:none;
+  position:sticky;
+  top:var(--gutter);
+  height:calc(100vh - (var(--gutter) * 2));
+  background:linear-gradient(180deg, rgba(48,42,60,.55) 0%, rgba(28,25,36,.65) 100%);
+  backdrop-filter:blur(28px) saturate(160%);
+  -webkit-backdrop-filter:blur(28px) saturate(160%);
+  border:1px solid rgba(240,233,218,.08);
+  border-radius:26px;
+  box-shadow:0 30px 60px -30px rgba(0,0,0,.6);
+  padding:26px 20px;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:22px;
+  gap:24px;
 }
 .sources::-webkit-scrollbar{width:5px}
 .sources::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
@@ -701,7 +718,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 .view.active-view{display:flex}
 
 #chat-view.active-view{
-  height:calc(100vh - var(--topbar-h) - 54px);
+  /* The gutter shows up four times between the top of the screen and
+     the bottom of this view: above the topbar, between the topbar and
+     the workspace, below the workspace, and at the bottom of the
+     screen. */
+  height:calc(100vh - var(--topbar-h) - (var(--gutter) * 4));
   min-height:0;
 }
 #chat-view .panel{
@@ -759,12 +780,88 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 
 .quiz-empty-state{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;padding:48px 20px;color:var(--ink-faint);
-  border:1.5px dashed var(--border);border-radius:var(--radius-lg);
+  gap:10px;padding:48px 20px;color:var(--ink-soft);
+  border:1.5px dashed rgba(36,31,23,.16);border-radius:var(--radius-lg);
   text-align:center;
 }
 .quiz-empty-state svg{color:var(--purple);opacity:.5}
 .quiz-empty-state p{margin:0;font-size:13.5px;font-weight:600}
+
+/* ==========================================================
+   DOCUMENTS VIEW
+   ========================================================== */
+.documents-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+  gap:14px;
+  padding:20px;
+}
+
+.doc-card{
+  border-radius:16px;
+  padding:18px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 4px 16px -10px rgba(24,24,27,.08);
+}
+
+.doc-card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.doc-card-icon{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--purple-light);color:var(--purple-deep);
+}
+.doc-card-icon svg{width:18px;height:18px}
+.doc-card-name{
+  font-size:14px;font-weight:800;margin:0 0 4px;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;
+}
+.doc-card-meta{
+  display:block;
+  font-size:11.5px;color:var(--ink-faint);font-weight:600;
+}
+
+.doc-card-actions{display:flex;flex-wrap:wrap;gap:7px}
+.doc-card-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 11px;border-radius:var(--radius-pill);
+  background:var(--surface-2);border:1px solid var(--border);
+  color:var(--ink-soft);font-family:inherit;font-size:11.5px;font-weight:700;
+  cursor:pointer;transition:border-color .15s var(--ease), color .15s var(--ease);
+}
+.doc-card-btn svg{width:12px;height:12px}
+.doc-card-btn:hover{border-color:var(--purple);color:var(--purple-deep)}
+.doc-card-btn.delete-action:hover{border-color:var(--red);color:var(--red)}
+
+/* ==========================================================
+   NOTES VIEW
+   ========================================================== */
+.notes-sections{
+  display:flex;flex-direction:column;gap:18px;
+  padding:20px;
+}
+
+.notes-section{
+  border-left:2.5px solid var(--purple);
+  padding-left:16px;
+}
+.notes-section h4{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:18px;margin:0 0 10px;color:var(--ink);
+}
+.notes-section ul{
+  margin:0;padding:0;list-style:none;
+  display:flex;flex-direction:column;gap:8px;
+}
+.notes-section li{
+  display:flex;align-items:flex-start;gap:9px;
+  font-size:13.5px;line-height:1.6;color:var(--ink-soft);
+}
+.notes-section li::before{
+  content:"";flex-shrink:0;margin-top:7px;
+  width:5px;height:5px;border-radius:50%;
+  background:var(--purple);
+}
 
 .quiz-questions{
   display:flex;flex-direction:column;gap:16px;
@@ -772,7 +869,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 }
 
 .quiz-card{
-  border:1.5px solid var(--border);border-radius:var(--radius-md);
+  border:1px solid var(--border);border-radius:var(--radius-md);
   padding:18px 20px;background:var(--surface-2);
   animation:msgIn .25s var(--ease);
 }
@@ -863,14 +960,14 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 }
 
 .flashcard-front{
-  background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
-  border:1px solid rgba(124,111,255,.28);
-  box-shadow:0 20px 44px -22px rgba(0,0,0,.55);
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 8px 28px -14px rgba(24,24,27,.12);
 }
 .flashcard-back{
-  background:linear-gradient(160deg, rgba(124,111,255,.16), rgba(45,212,238,.08));
-  border:1px solid rgba(124,111,255,.4);
-  box-shadow:0 20px 44px -22px rgba(124,111,255,.35);
+  background:linear-gradient(135deg,#8577F0,var(--purple-dark));
+  border:none;
+  box-shadow:0 8px 28px -14px rgba(91,79,233,.3);
   transform:rotateY(180deg);
 }
 
@@ -884,9 +981,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   font-size:38px;line-height:1.3;color:var(--ink);margin:0;
 }
 .flashcard-back p{
-  font-size:19px;line-height:1.65;color:var(--ink);margin:0;
+  font-size:19px;line-height:1.65;color:#fff;margin:0;
   max-height:250px;overflow-y:auto;
 }
+
+.flashcard-back .flashcard-label{color:rgba(255,255,255,.75)}
+.flashcard-back .flashcard-flip-hint{color:rgba(255,255,255,.6)}
 
 .flashcard-flip-hint{
   font-size:11px;color:var(--ink-faint);font-weight:600;
@@ -895,6 +995,70 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 .flashcard-nav{
   display:flex;align-items:center;gap:12px;
 }
+
+/* ==========================================================
+   DOCUMENTS VIEW
+   ========================================================== */
+.documents-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+  gap:14px;
+  padding:20px;
+}
+
+.doc-card{
+  border-radius:16px;
+  padding:16px 16px 14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 4px 16px -10px rgba(24,24,27,.08);
+  transition:border-color .18s var(--ease), transform .18s var(--ease);
+}
+.doc-card:hover{
+  border-color:rgba(124,111,255,.4);
+  transform:translateY(-2px);
+}
+
+.doc-card-top{
+  display:flex;align-items:flex-start;gap:11px;margin-bottom:12px;
+}
+.doc-card-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:var(--purple-light);color:var(--purple-deep);
+  display:flex;align-items:center;justify-content:center;
+}
+.doc-card-icon svg{width:17px;height:17px}
+
+.doc-card-name{
+  font-size:13.5px;font-weight:700;color:var(--ink);
+  margin:0 0 3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.doc-card-meta{
+  font-size:11.5px;color:var(--ink-faint);font-weight:600;
+}
+
+.doc-card-actions{
+  display:flex;gap:8px;margin-top:4px;
+}
+.doc-card-btn{
+  flex:1;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 10px;border-radius:9px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:background .15s var(--ease), border-color .15s var(--ease);
+}
+.doc-card-btn.chat-action{
+  background:var(--purple-light);border:1px solid rgba(133,119,240,.3);color:var(--purple-deep);
+}
+.doc-card-btn.chat-action:hover{background:rgba(133,119,240,.24)}
+.doc-card-btn.delete-action{
+  flex:0 0 auto;
+  width:32px;padding:8px;
+  background:rgba(235,90,80,.1);border:1px solid rgba(235,90,80,.28);color:var(--red);
+}
+.doc-card-btn.delete-action:hover{background:rgba(235,90,80,.2)}
+.doc-card-btn svg{width:14px;height:14px}
 @media(max-width:1240px){
   .shell{grid-template-columns:var(--sidebar-w) 1fr}
   .sources{display:none}
@@ -906,22 +1070,25 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   .search-wrap{display:none}
 }
 @media(max-width:560px){
-  .workspace{padding:18px 14px 14px}
+  :root{--gutter:14px}
   .welcome-card{flex-direction:column;align-items:flex-start}
   .topbar{padding:0 14px;gap:10px}
   .stats{grid-template-columns:1fr}
+  .upload-btn-inline span, .logout-btn-glass span{display:none}
+  .upload-btn-inline, .logout-btn-glass{padding:9px 11px}
+  #username{display:none}
 }
 
 /* ==========================================================
    QUICK TOOLS GRID (Option A — lifted cards on dark page)
    ========================================================== */
-.tools-section{margin-bottom:20px}
+.tools-section{}
 .tools-section-head{
   display:flex;align-items:baseline;justify-content:space-between;
   margin-bottom:12px;
 }
 .tools-section-head h3{font-size:14.5px;font-weight:800;margin:0;color:var(--ink)}
-.tools-section-head span{font-size:11.5px;color:var(--ink-faint);font-weight:600}
+.tools-section-head span{font-size:11.5px;color:var(--ink-soft);font-weight:600}
 
 .tools-grid{
   display:grid;
@@ -935,23 +1102,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   position:relative;
   overflow:hidden;
   cursor:pointer;
-  background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
-  border:1px solid rgba(124,111,255,.22);
-  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 16px 32px -22px rgba(0,0,0,.55);
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 4px 16px -10px rgba(24,24,27,.08);
   transition:transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
-}
-.feature-card::after{
-  content:"";position:absolute;inset:0;
-  background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size:14px 14px;pointer-events:none;opacity:.5;
 }
 .feature-card:hover{
   transform:translateY(-3px);
-  border-color:rgba(124,111,255,.5);
-  box-shadow:0 22px 44px -18px rgba(124,111,255,.35);
+  border-color:rgba(124,111,255,.4);
+  box-shadow:0 16px 32px -14px rgba(91,79,233,.18);
 }
 .feature-card.disabled{cursor:default}
-.feature-card.disabled:hover{transform:none;border-color:rgba(124,111,255,.22);box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 16px 32px -22px rgba(0,0,0,.55)}
+.feature-card.disabled:hover{transform:none;border-color:var(--border);box-shadow:0 4px 16px -10px rgba(24,24,27,.08)}
 
 .fc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;position:relative;z-index:1}
 .fc-icon{
@@ -967,15 +1129,76 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   position:absolute;top:16px;right:16px;z-index:1;
   font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
   padding:3px 8px;border-radius:var(--radius-pill);
-  background:rgba(255,255,255,.06);color:var(--ink-faint);
+  background:var(--border-soft);color:var(--ink-faint);
 }
 
-.ic-purple{background:rgba(124,111,255,.16);color:#9C90FF}
-.ic-cyan{background:rgba(45,212,238,.16);color:#5FE3F5}
-.ic-amber{background:rgba(245,166,35,.16);color:#F5B85C}
-.ic-green{background:rgba(52,211,153,.16);color:#5EEAD4}
-.ic-red{background:rgba(240,85,75,.16);color:#F0897F}
-.ic-blue{background:rgba(76,141,255,.16);color:#7CA8FF}
+.ic-purple{background:rgba(124,111,255,.12);color:#5B4FE9}
+.ic-cyan{background:rgba(26,166,184,.12);color:#0E7F8E}
+.ic-amber{background:rgba(201,122,14,.12);color:#A6650D}
+.ic-green{background:rgba(24,154,99,.12);color:#158A5F}
+.ic-red{background:rgba(216,67,58,.12);color:#B7362D}
+.ic-blue{background:rgba(76,141,255,.12);color:#3A6FD1}
+
+/* ==========================================================
+   LOGOUT CONFIRMATION MODAL
+   Hidden by default (display:none). Adding the "open" class
+   (done in auth.js) shows it as a centered card over a dark
+   backdrop, instead of the browser's native confirm() popup.
+   ========================================================== */
+.logout-modal{
+  display:none;
+  position:fixed;inset:0;z-index:100;
+  align-items:center;justify-content:center;
+  background:rgba(24,24,27,.5);
+  padding:20px;
+}
+.logout-modal.open{display:flex}
+
+.logout-modal-card{
+  width:100%;max-width:360px;
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  padding:28px 26px;
+  text-align:center;
+  box-shadow:0 24px 48px -16px rgba(24,24,27,.25);
+  animation:logoutModalIn .18s var(--ease);
+}
+@keyframes logoutModalIn{
+  from{opacity:0;transform:translateY(8px) scale(.98)}
+  to{opacity:1;transform:none}
+}
+
+.logout-modal-icon{
+  width:48px;height:48px;border-radius:50%;
+  margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(216,67,58,.1);color:var(--red);
+}
+
+.logout-modal-card h3{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:20px;margin:0 0 8px;color:var(--ink);
+}
+.logout-modal-card p{
+  font-size:13px;line-height:1.6;color:var(--ink-soft);margin:0 0 22px;
+}
+
+.logout-modal-actions{display:flex;gap:10px}
+.logout-modal-cancel,
+.logout-modal-confirm{
+  flex:1;padding:11px;border-radius:var(--radius-pill);
+  font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;
+  transition:filter .15s var(--ease), background .15s var(--ease);
+}
+.logout-modal-cancel{
+  background:var(--surface-2);border:1px solid var(--border);color:var(--ink-soft);
+}
+.logout-modal-cancel:hover{background:var(--border-soft)}
+.logout-modal-confirm{
+  background:var(--red);border:none;color:#fff;
+}
+.logout-modal-confirm:hover{filter:brightness(1.08)}
+
 </style>
 </head>
 <body>
@@ -991,9 +1214,36 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   <aside class="sidebar" aria-label="Primary navigation">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z" fill="#fff" opacity=".95"/><path d="M14 4v5h5" fill="#C9C6F7"/><path d="M8 13h6M8 16.5h6M8 10.5h3" stroke="#5B4FE9" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <svg width="30" height="30" viewBox="0 0 64 64">
+          <defs>
+            <clipPath id="askdocsClipSidebar"><path d="M16 8h20l12 12v30a6 6 0 01-6 6H16a6 6 0 01-6-6V14a6 6 0 016-6z"/></clipPath>
+            <linearGradient id="askdocsBaseSidebar" x1="6" y1="8" x2="48" y2="56">
+              <stop offset="0" stop-color="#8B7CFF"/>
+              <stop offset=".55" stop-color="#6C5CE9"/>
+              <stop offset="1" stop-color="#3B2FA8"/>
+            </linearGradient>
+            <linearGradient id="askdocsGlossSidebar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffffff" stop-opacity=".5"/>
+              <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="askdocsShadowSidebar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset=".6" stop-color="#000000" stop-opacity="0"/>
+              <stop offset="1" stop-color="#000000" stop-opacity=".26"/>
+            </linearGradient>
+          </defs>
+          <path d="M16 8h20l12 12v30a6 6 0 01-6 6H16a6 6 0 01-6-6V14a6 6 0 016-6z" fill="url(#askdocsBaseSidebar)"/>
+          <g clip-path="url(#askdocsClipSidebar)">
+            <rect x="6" y="8" width="42" height="48" fill="url(#askdocsShadowSidebar)"/>
+            <ellipse cx="24" cy="16" rx="26" ry="14" fill="url(#askdocsGlossSidebar)"/>
+            <ellipse cx="14" cy="16" rx="5.5" ry="3.6" fill="#ffffff" opacity=".38"/>
+          </g>
+          <path d="M20 24h18M20 31h18" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>
+          <path d="M22 40c0-3 2.5-4 4.5-5.2 1.6-1 2.5-1.8 2.5-3.3 0-2-1.6-3-3.5-3-1.6 0-3 .8-3.7 2.2"
+                stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+          <circle cx="25.5" cy="44.5" r="1.6" fill="#ffffff"/>
+        </svg>
       </span>
-      <span class="brand-name">AskDocs<sup>AI Workspace</sup></span>
+      <span class="brand-name">AskDocs</span>
     </div>
 
     <nav class="sidebar-scroll">
@@ -1007,11 +1257,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h13l3 3v13H4z"/><path d="M8 10h8M8 14h5"/></svg>
           <span>AI Chat</span>
         </a>
-        <a class="nav-link">
+        <a class="nav-link" data-view="documents-view">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg>
           <span>Documents</span>
         </a>
-        <a class="nav-link">
+        <a class="nav-link" data-view="notes-view">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
           <span>Notes</span>
         </a>
@@ -1057,13 +1307,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
         </a>
       </div>
     </nav>
-
-    <div class="sidebar-footer">
-      <button class="logout-btn" onclick="logout()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        Logout
-      </button>
-    </div>
   </aside>
 
   <!-- ===================== MAIN ===================== -->
@@ -1077,10 +1320,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
       </div>
       <div class="topbar-spacer"></div>
 
-      <button class="theme-toggle on" id="themeToggle" aria-label="Toggle dark mode" aria-pressed="true">
-        <span class="knob">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 109 9 7 7 0 01-9-9z"/></svg>
-        </span>
+      <button class="upload-btn-inline" onclick="openUploadDialog()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M6 10l6-6 6 6M4 20h16"/></svg>
+        <span>Upload</span>
       </button>
 
       <button class="icon-btn" aria-label="Notifications">
@@ -1092,6 +1334,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
         <span class="profile-avatar" id="avatarInitial">?</span>
         <span id="username">Loading…</span>
       </button>
+
+      <button class="logout-btn-glass" onclick="logout()" aria-label="Logout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>Logout</span>
+      </button>
     </header>
 
     <!-- WORKSPACE -->
@@ -1102,7 +1349,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 
       <section class="welcome-card">
         <div class="welcome-text">
-          <h1>Welcome back 👋</h1>
+          <h1>Welcome back</h1>
           <div class="gradient-rule"></div>
           <p>Upload a document and start asking questions — AskDocs finds the answer and shows exactly where it came from.</p>
         </div>
@@ -1190,13 +1437,22 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
             <p>Add a new PDF, Word doc, or slide deck to your workspace.</p>
           </div>
 
-          <div class="feature-card disabled">
-            <div class="fc-soon">Soon</div>
+          <div class="feature-card" id="qtDocuments">
+            <div class="fc-top">
+              <div class="fc-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg></div>
+              <svg class="fc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <h4>Documents</h4>
+            <p>Browse everything you've uploaded, and manage or delete files.</p>
+          </div>
+
+          <div class="feature-card" id="qtNotes">
             <div class="fc-top">
               <div class="fc-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div>
+              <svg class="fc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
             </div>
             <h4>Notes</h4>
-            <p>Auto-generated summaries and notes you can edit and save per document.</p>
+            <p>Turn any document into organized study notes with headings and key points.</p>
           </div>
 
           <div class="feature-card" id="qtFlashcards">
@@ -1274,7 +1530,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 
         <section class="welcome-card">
           <div class="welcome-text">
-            <h1>Quiz yourself 🧠</h1>
+            <h1>Quiz yourself</h1>
             <p>Generate multiple-choice and true/false questions straight from your uploaded documents.</p>
           </div>
         </section>
@@ -1333,7 +1589,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 
         <section class="welcome-card">
           <div class="welcome-text">
-            <h1>Study with flashcards 🗂️</h1>
+            <h1>Study with flashcards</h1>
             <div class="gradient-rule"></div>
             <p>Turn key terms and concepts from your documents into flashcards you can flip through.</p>
           </div>
@@ -1416,33 +1672,91 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
       </section>
       <!-- ===================== /FLASHCARDS VIEW ===================== -->
 
+      <!-- ===================== DOCUMENTS VIEW ===================== -->
+      <section class="view" id="documents-view" hidden>
+
+        <section class="welcome-card">
+          <div class="welcome-text">
+            <h1>Your Documents</h1>
+            <div class="gradient-rule"></div>
+            <p>Every file you've uploaded, in one place — chat about one, or remove it for good.</p>
+          </div>
+          <button class="welcome-cta" onclick="openUploadDialog()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v12M6 10l6-6 6 6M4 20h16"/></svg>
+            Upload a document
+          </button>
+        </section>
+
+        <section class="panel" id="documentsPanel" aria-label="All documents">
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> All Documents</h3>
+            <span class="hint" id="documentsCountHint">Loading…</span>
+          </div>
+
+          <div class="documents-grid" id="documentsGrid"></div>
+
+          <div id="documentsEmptyState" class="quiz-empty-state" hidden>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg>
+            <p>No documents uploaded yet — click "Upload a document" above to get started.</p>
+          </div>
+        </section>
+
+      </section>
+      <!-- ===================== /DOCUMENTS VIEW ===================== -->
+
+      <!-- ===================== NOTES VIEW ===================== -->
+      <section class="view" id="notes-view" hidden>
+
+        <section class="welcome-card">
+          <div class="welcome-text">
+            <h1>Study notes</h1>
+            <div class="gradient-rule"></div>
+            <p>Turn a document into organized notes — headings and key points, ready to review.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="notesSetupPanel" aria-label="Notes setup">
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> Generate Notes</h3>
+            <span class="hint">Powered by your uploaded documents</span>
+          </div>
+
+          <div class="quiz-setup">
+            <div class="quiz-field">
+              <label for="notesDocumentSelect">Source</label>
+              <select id="notesDocumentSelect">
+                <option value="">All documents</option>
+              </select>
+            </div>
+
+            <button id="generateNotesBtn" class="primary-action-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+              Generate Notes
+            </button>
+          </div>
+
+          <p class="quiz-hint">Uses the full text of the selected document(s) — larger documents may take a few seconds.</p>
+        </section>
+
+        <section class="panel" id="notesResultsPanel" aria-label="Generated notes" hidden>
+          <div class="panel-head">
+            <h3><span class="pulse" aria-hidden="true"></span> Your Notes</h3>
+            <button id="regenerateNotesBtn" class="ghost-btn">Start Over</button>
+          </div>
+
+          <div id="notesSections" class="notes-sections"></div>
+        </section>
+
+        <div id="notesEmptyState" class="quiz-empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          <p>No notes yet — pick a document above and hit Generate.</p>
+        </div>
+
+      </section>
+      <!-- ===================== /NOTES VIEW ===================== -->
+
     </main>
   </div>
-
-  <!-- ===================== SOURCES ===================== -->
-  <aside class="sources" aria-label="Sources and recent documents">
-    <div>
-      <h3>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-        Sources
-      </h3>
-      <p class="sub">Citations for the latest answer</p>
-      <div id="sourceList">
-        <div class="sources-empty">Ask a question to see citations here.</div>
-      </div>
-    </div>
-
-    <div>
-      <h3>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg>
-        Recent Documents
-      </h3>
-      <p class="sub">Everything you've uploaded</p>
-      <div id="recentDocuments">
-        <div class="sources-empty">No documents yet.</div>
-      </div>
-    </div>
-  </aside>
 
 </div>
 
@@ -1452,22 +1766,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 <script src="../js/dashboard.js"></script>
 <script src="../js/quiz.js"></script>
 <script src="../js/flashcards.js"></script>
+<script src="../js/documents.js"></script>
+<script src="../js/notes.js"></script>
 <script>
-  // Theme toggle (visual only — persists nothing, respects no external storage)
-  (function(){
-    const toggle = document.getElementById("themeToggle");
-    if (toggle) {
-      toggle.addEventListener("click", function(){
-        const isOn = toggle.classList.toggle("on");
-        toggle.setAttribute("aria-pressed", isOn ? "true" : "false");
-        document.body.classList.toggle("dark-preview", isOn);
-        // Note: AskDocs currently ships one dark theme by design (matching
-        // the reference UI). This toggle is wired up and visually functional,
-        // but there's no separate light stylesheet to switch to yet.
-      });
-    }
-  })();
-
   // Auto-grow the question textarea
   (function(){
     const el = document.getElementById("question");
@@ -1517,10 +1818,42 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
       });
     }
 
+    const documentsCard = document.getElementById("qtDocuments");
+    if (documentsCard) {
+      documentsCard.addEventListener("click", function(){
+        const documentsNavLink = document.querySelector('.nav-link[data-view="documents-view"]');
+        if (documentsNavLink) documentsNavLink.click();
+      });
+    }
+
+    const notesCard = document.getElementById("qtNotes");
+    if (notesCard) {
+      notesCard.addEventListener("click", function(){
+        const notesNavLink = document.querySelector('.nav-link[data-view="notes-view"]');
+        if (notesNavLink) notesNavLink.click();
+      });
+    }
+
   })();
 
   // Profile loading, document loading, and event binding all happen
   // in dashboard.js -> initDashboard() on DOMContentLoaded.
 </script>
+
+<!-- ===================== LOGOUT CONFIRMATION MODAL ===================== -->
+<div class="logout-modal" id="logoutModal">
+  <div class="logout-modal-card">
+    <div class="logout-modal-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </div>
+    <h3>Log out?</h3>
+    <p>You'll need to log back in to access your documents and chats.</p>
+    <div class="logout-modal-actions">
+      <button type="button" id="logoutCancelBtn" class="logout-modal-cancel">Cancel</button>
+      <button type="button" id="logoutConfirmBtn" class="logout-modal-confirm">Log Out</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

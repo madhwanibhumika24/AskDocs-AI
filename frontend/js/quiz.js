@@ -4,6 +4,7 @@
 
 let currentQuiz = [];
 let quizDocumentsLoaded = false;
+let quizDocumentsLoadPromise = null;
 
 document.addEventListener("DOMContentLoaded", initQuiz);
 
@@ -41,7 +42,7 @@ function bindNavSwitching() {
 
             // The first time someone opens the Quiz view, load the
             // list of documents into the dropdown.
-            if (targetId === "quiz-view" && !quizDocumentsLoaded) {
+            if (targetId === "quiz-view") {
                 populateQuizDocumentSelect();
             }
 
@@ -55,6 +56,18 @@ function bindNavSwitching() {
             // flashcards.js.
             if (targetId === "flashcards-view" && typeof window.populateFlashcardDocumentSelect === "function") {
                 window.populateFlashcardDocumentSelect();
+            }
+
+            // The Documents view loads its own file list, handled in
+            // documents.js.
+            if (targetId === "documents-view" && typeof window.populateDocumentsView === "function") {
+                window.populateDocumentsView();
+            }
+
+            // Notes has its own document dropdown too, handled in
+            // notes.js.
+            if (targetId === "notes-view" && typeof window.populateNotesDocumentSelect === "function") {
+                window.populateNotesDocumentSelect();
             }
 
         });
@@ -103,6 +116,18 @@ async function populateQuizDocumentSelect() {
     const select = document.getElementById("quizDocumentSelect");
 
     if (!select) return;
+
+    if (quizDocumentsLoaded) return;
+
+    if (!quizDocumentsLoadPromise) {
+        quizDocumentsLoadPromise = loadQuizDocumentOptions(select);
+    }
+
+    await quizDocumentsLoadPromise;
+
+}
+
+async function loadQuizDocumentOptions(select) {
 
     try {
 

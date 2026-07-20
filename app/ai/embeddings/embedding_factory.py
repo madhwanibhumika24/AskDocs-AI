@@ -1,8 +1,8 @@
-from app.ai.embeddings.huggingface_embeddings import HuggingFaceEmbedding
+from app.ai.embeddings.gemini_embeddings import GeminiEmbedding
 
 
 class EmbeddingFactory:
 
     @classmethod
     def get_embeddings(cls):
-        return HuggingFaceEmbedding().get_embeddings()
+        return GeminiEmbedding().get_embeddings()

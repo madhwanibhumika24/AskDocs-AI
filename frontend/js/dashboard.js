@@ -1,5 +1,8 @@
 /* ==========================================================
    AskDocs Dashboard Controller
+   Owns: auth check, profile, document loading (chips/sidebar/
+   stats). Chat lives in chat.js, quiz in quiz.js, upload in
+   upload.js — each module binds its own events independently.
    ========================================================== */
 
 document.addEventListener("DOMContentLoaded", initDashboard);
@@ -20,9 +23,6 @@ async function initDashboard() {
 
         // Load documents into chips / sidebar / stats
         await loadDocuments();
-
-        // Bind all UI events
-        bindEvents();
 
     }
     catch (err) {
@@ -59,9 +59,14 @@ async function loadUserProfile() {
     }
     catch (err) {
 
-        // Auth isn't wired up yet, so this is expected for now —
-        // just fall back to a placeholder instead of crashing.
-        console.warn("[dashboard.js] Could not load profile (auth not set up yet):", err);
+        // Don't force the logout confirmation modal here — a failed
+        // profile fetch is often just a transient hiccup, not proof
+        // the session is actually dead. Real session expiry (a true
+        // 401) is already handled separately and silently by the
+        // global check in api.js's apiRequest() — that one bypasses
+        // the modal entirely and redirects straight to login, which
+        // is the correct behavior for an actually-expired token.
+        console.warn("[dashboard.js] Could not load profile:", err);
 
         const username = document.getElementById("username");
         const avatar = document.getElementById("avatarInitial");
@@ -122,7 +127,7 @@ function renderUploadedChips(documents) {
         const chip = document.createElement("div");
         chip.className = "document-chip";
         chip.innerHTML = `
-            <span class="chip-icon">📄</span>
+            <span class="chip-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg></span>
             <span>${filename}</span>
             <button type="button" aria-label="Remove ${filename}" onclick="removeDocument(this,'${docId}')">✕</button>
         `;
@@ -169,165 +174,6 @@ function renderRecentDocuments(documents) {
 }
 
 /* ==========================================================
-   EVENTS
-   ========================================================== */
-
-function bindEvents() {
-
-    // Send Button
-    const sendBtn = document.getElementById("sendBtn");
-
-    if (sendBtn) {
-
-        sendBtn.addEventListener("click", askQuestion);
-
-    }
-
-    // Enter key (Shift+Enter for newline)
-    const questionInput = document.getElementById("question");
-
-    if (questionInput) {
-
-        questionInput.addEventListener("keydown", function (e) {
-
-            if (e.key === "Enter" && !e.shiftKey) {
-
-                e.preventDefault();
-
-                askQuestion();
-
-            }
-
-        });
-
-    }
-
-}
-
-/* ==========================================================
-   SEND QUESTION
-   ========================================================== */
-
-async function askQuestion() {
-
-    const input = document.getElementById("question");
-
-    if (!input) return;
-
-    const question = input.value.trim();
-
-    if (question === "") return;
-
-    addUserMessage(question);
-
-    input.value = "";
-    input.style.height = "auto";
-
-    try {
-
-        const response = await sendMessage(question);
-
-        addAIMessage(response.answer);
-
-        updateSources(response.sources);
-
-    }
-    catch (err) {
-
-        console.error("[dashboard.js] sendMessage failed:", err);
-
-        addAIMessage("Unable to contact AI. Check the console for details.");
-
-    }
-
-}
-
-/* ==========================================================
-   USER MESSAGE
-   ========================================================== */
-
-function addUserMessage(message) {
-
-    const container = document.getElementById("messages");
-
-    if (!container) return;
-
-    const el = document.createElement("div");
-    el.className = "message user";
-    el.innerHTML = `
-        <span class="msg-avatar" aria-hidden="true">You</span>
-        <div class="bubble"></div>
-    `;
-    el.querySelector(".bubble").textContent = message;
-
-    container.appendChild(el);
-
-    container.scrollTop = container.scrollHeight;
-
-}
-
-/* ==========================================================
-   AI MESSAGE
-   ========================================================== */
-
-function addAIMessage(message) {
-
-    const container = document.getElementById("messages");
-
-    if (!container) return;
-
-    const el = document.createElement("div");
-    el.className = "message ai";
-    el.innerHTML = `
-        <span class="msg-avatar" aria-hidden="true">AI</span>
-        <div class="bubble"></div>
-    `;
-    el.querySelector(".bubble").textContent = message;
-
-    container.appendChild(el);
-
-    container.scrollTop = container.scrollHeight;
-
-}
-
-/* ==========================================================
-   SOURCES
-   ========================================================== */
-
-function updateSources(sources) {
-
-    const panel = document.getElementById("sourceList");
-
-    if (!panel) return;
-
-    panel.innerHTML = "";
-
-    if (!sources || sources.length === 0) {
-
-        panel.innerHTML = `<div class="sources-empty">No sources found for this answer.</div>`;
-
-        return;
-
-    }
-
-    sources.forEach(source => {
-
-        const card = document.createElement("div");
-        card.className = "source-card";
-        card.innerHTML = `
-            <div class="source-inner">
-                <h4>${source.filename || "Document"}</h4>
-                <p>Page ${source.page || "-"}</p>
-            </div>
-        `;
-
-        panel.appendChild(card);
-
-    });
-
-}
-
-/* ==========================================================
    DASHBOARD STATS
    ========================================================== */
 
@@ -360,8 +206,6 @@ async function refreshDashboard() {
    ========================================================== */
 
 window.refreshDashboard = refreshDashboard;
-window.askQuestion = askQuestion;
-window.addUserMessage = addUserMessage;
-window.addAIMessage = addAIMessage;
-window.updateSources = updateSources;
+window.renderUploadedChips = renderUploadedChips;
+window.renderRecentDocuments = renderRecentDocuments;
 window.updateStats = updateStats;

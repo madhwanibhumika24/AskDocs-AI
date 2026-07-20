@@ -3,6 +3,7 @@ from typing import Any
 from app.ai.chains.rag_chain import RAGChain
 from app.ai.vectorstores.vectorstore_factory import VectorStoreFactory
 from app.schemas.citation import Source
+from app.services import chat_history_service
 
 # If the question contains any of these words/phrases, we treat it as a
 # "broad" question — the person wants an overview of the WHOLE document,
@@ -44,6 +45,12 @@ class ChatService:
     2. BROAD questions ("summarize this document") use the FULL document
        instead — searching for "relevant chunks" doesn't work well for a
        question that isn't really about one specific fact.
+
+    In both cases, recent conversation history is included so the AI
+    has context for follow-up questions like "what about that" or
+    "explain more" — without that history, every question would be
+    answered completely in isolation, with zero memory of what was
+    just discussed.
     """
 
     def __init__(self) -> None:
@@ -54,6 +61,7 @@ class ChatService:
         self,
         question: str,
         user_id: str,
+        session_id: str,
         document_id: str | None = None,
     ) -> dict:
 
@@ -67,6 +75,14 @@ class ChatService:
         if document_id:
             metadata_filter["document_id"] = document_id
 
+        # Pull in recent conversation history and weave it into the
+        # question before answering — the AI sees the history, but we
+        # still store the ORIGINAL plain question in the database, not
+        # this combined version (otherwise history would keep stacking
+        # on top of itself every single turn).
+        history = chat_history_service.get_recent_messages(user_id, session_id)
+        question_with_history = self._add_history_to_question(question, history)
+
         # Broad questions only get the "send the whole document" treatment
         # when a specific document is selected. Without a document_id, we
         # don't know which document(s) to send in full, so we fall back
@@ -74,9 +90,47 @@ class ChatService:
         question_is_broad = self._is_broad_question(question)
 
         if document_id and question_is_broad:
-            return self._answer_using_whole_document(question, metadata_filter)
+            result = self._answer_using_whole_document(question_with_history, metadata_filter)
+        else:
+            result = self._answer_using_search(question_with_history, metadata_filter)
 
-        return self._answer_using_search(question, metadata_filter)
+        # Save this exchange so the NEXT question in this session can
+        # see it too.
+        chat_history_service.save_message(user_id, session_id, "user", question)
+        chat_history_service.save_message(user_id, session_id, "assistant", result["answer"])
+
+        return result
+
+    @staticmethod
+    def _add_history_to_question(question: str, history: list[dict]) -> str:
+        """
+        Builds a single block of text that includes recent conversation
+        history followed by the new question — this is what actually
+        gets sent to the AI as "the question." If there's no history
+        yet (first message in a session), this just returns the
+        question unchanged.
+        """
+
+        if not history:
+            return question
+
+        history_lines = []
+
+        for message in history:
+            speaker = "User" if message["role"] == "user" else "Assistant"
+            history_lines.append(f"{speaker}: {message['content']}")
+
+        history_text = "\n".join(history_lines)
+
+        return (
+            f"Here is the recent conversation so far, for context:\n"
+            f"{history_text}\n\n"
+            f"Now answer this new question. Use the conversation above only "
+            f"to understand what the person is referring to (like \"it\" or "
+            f"\"that\") — the actual answer must still come from the "
+            f"document content, not from the conversation history itself.\n\n"
+            f"New question: {question}"
+        )
 
     def _answer_using_search(
         self,
@@ -142,7 +196,7 @@ class ChatService:
 
           1. Build the actual prompt text from a template
           2. Send that prompt to the AI model
-          3. Turn the AI's raw response into a plain string
+          3. Turn the AI's response into a plain string
         """
 
         # Step 1: fill in the {context} and {question} blanks in the
