@@ -11,6 +11,12 @@ class FlashcardRequest(BaseModel):
         examples=["doc_a1b2c3d4"],
     )
 
+    room_id: Optional[str] = Field(
+        default=None,
+        description="Generate flashcards from every document in a room instead of a single document. If both document_id and room_id are given, room_id wins.",
+        examples=["1"],
+    )
+
     num_cards: int = Field(
         default=10,
         ge=1,

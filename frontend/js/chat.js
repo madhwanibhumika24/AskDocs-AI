@@ -3,6 +3,7 @@
    ========================================================== */
 
 let chatDocumentsLoaded = false;
+let chatDocumentsLoadPromise = null;
 
 document.addEventListener("DOMContentLoaded", bindChatEvents);
 
@@ -57,7 +58,7 @@ async function askForSummary() {
     const documentId = documentSelect ? documentSelect.value : "";
 
     if (!documentId) {
-        alert("Pick a specific document from the dropdown first — summarizing works best when scoped to one document.");
+        alert("Pick a specific document or room from the dropdown first — summarizing works best when scoped, not across everything.");
         return;
     }
 
@@ -79,9 +80,36 @@ async function populateChatDocumentSelect() {
 
     const select = document.getElementById("chatDocumentSelect");
 
-    if (!select || chatDocumentsLoaded) return;
+    if (!select) return;
+
+    if (chatDocumentsLoaded) {
+        // Already loaded — still check whether we arrived here from a
+        // room's quick-action button and need to select that room.
+        if (window.applyPendingRoomSelection) {
+            window.applyPendingRoomSelection("chatDocumentSelect");
+        }
+        return;
+    }
+
+    if (!chatDocumentsLoadPromise) {
+        chatDocumentsLoadPromise = loadChatDocumentOptions(select);
+    }
+
+    await chatDocumentsLoadPromise;
+
+    if (window.applyPendingRoomSelection) {
+        window.applyPendingRoomSelection("chatDocumentSelect");
+    }
+
+}
+
+async function loadChatDocumentOptions(select) {
 
     try {
+
+        if (window.addRoomOptionsToSelect) {
+            await window.addRoomOptionsToSelect(select);
+        }
 
         const result = await getDocuments();
 
@@ -129,7 +157,9 @@ async function askQuestion() {
 
     if (question === "") return;
 
-    const documentId = documentSelect ? documentSelect.value : "";
+    const scope = window.readScopeFromSelect
+        ? window.readScopeFromSelect(documentSelect)
+        : { documentId: documentSelect ? documentSelect.value : "", roomId: null };
 
     addUserMessage(question);
 
@@ -142,7 +172,7 @@ async function askQuestion() {
 
     try {
 
-        const response = await sendMessage(question, documentId);
+        const response = await sendMessage(question, scope.documentId, scope.roomId);
 
         removeTypingIndicator(typingBubble);
 

@@ -23,6 +23,7 @@ async def generate_quiz(
 
     result = quiz_service.generate(
         document_id=request.document_id,
+        room_id=request.room_id,
         num_questions=request.num_questions,
         user_id=user_id,
     )

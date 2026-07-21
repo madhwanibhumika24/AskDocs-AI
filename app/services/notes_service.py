@@ -9,7 +9,6 @@ from app.core.constants import DEFAULT_USER_ID
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-# The instructions we give the AI model for generating study notes.
 NOTES_PROMPT_TEXT = """You are a study notes generator. Using ONLY the content \
 provided below, organize the material into clear study notes.
 
@@ -39,20 +38,14 @@ Content:
 
 NOTES_PROMPT = ChatPromptTemplate.from_template(NOTES_PROMPT_TEXT)
 
-# Roughly how many characters of document text we'll send to the AI at
-# once, so very large documents don't blow past what the model can handle.
 MAX_CONTEXT_CHARACTERS = 12000
 
 
 class NotesService:
     """
-    Generates structured study notes (headings + bullet points) from a
-    document the user has uploaded.
-
-    Like quizzes and flashcards, this always uses the FULL content of
-    the document rather than searching for "relevant" chunks — notes
-    need to cover the whole document, not just parts that match a
-    search.
+    Generates structured study notes from a document — or now, from
+    every document in a room — the user has uploaded. Always uses the
+    FULL content, never a similarity search.
     """
 
     def __init__(self) -> None:
@@ -63,12 +56,15 @@ class NotesService:
     def generate(
         self,
         document_id: str | None = None,
+        room_id: str | None = None,
         user_id: str = DEFAULT_USER_ID,
     ) -> dict:
 
         metadata_filter: dict[str, Any] = {"user_id": user_id}
 
-        if document_id:
+        if room_id:
+            metadata_filter["room_id"] = room_id
+        elif document_id:
             metadata_filter["document_id"] = document_id
 
         all_chunks = self.vectorstore.get_by_filter(metadata_filter)
@@ -77,10 +73,9 @@ class NotesService:
             raise HTTPException(
                 status_code=404,
                 detail="No document content found to generate notes from. "
-                       "Upload a document first, or check the document_id.",
+                       "Upload a document first, or check the document_id/room_id.",
             )
 
-        # Combine every chunk's text into one big block of text.
         full_text = ""
         for chunk in all_chunks:
             full_text += chunk.page_content + "\n\n"
@@ -93,16 +88,6 @@ class NotesService:
         return self._parse_notes_json(raw_response_text)
 
     def _ask_llm_for_notes(self, context: str) -> str:
-        """
-        Sends the document content to the AI model and asks it to write
-        study notes, returning the AI's raw text response.
-
-        Written as three separate steps instead of one chained
-        pipeline:
-          1. Build the actual prompt text from the template
-          2. Send that prompt to the AI model
-          3. Turn the AI's response into a plain string
-        """
 
         filled_in_prompt = NOTES_PROMPT.format(context=context)
 
@@ -114,11 +99,6 @@ class NotesService:
 
     @staticmethod
     def _parse_notes_json(raw_text: str) -> dict:
-        """
-        The AI is told to respond with pure JSON, but sometimes wraps it
-        in a markdown code block anyway. This strips that off if
-        present, using plain string checks — no regex.
-        """
 
         cleaned_text = raw_text.strip()
 

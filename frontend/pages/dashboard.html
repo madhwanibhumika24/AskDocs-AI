@@ -417,7 +417,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 #flashcardStudyPanel,
 #documentsPanel,
 #notesSetupPanel,
-#notesResultsPanel{
+#notesResultsPanel,
+#roomsGridPanel,
+#roomDetailDocsPanel{
   flex:none;
   min-height:0;
   height:auto;
@@ -1058,6 +1060,84 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
   background:rgba(235,90,80,.1);border:1px solid rgba(235,90,80,.28);color:var(--red);
 }
 .doc-card-btn.delete-action:hover{background:rgba(235,90,80,.2)}
+
+/* ==========================================================
+   ROOMS VIEW
+   ========================================================== */
+.room-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+  gap:14px;
+}
+.room-card{
+  position:relative;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:18px;box-shadow:0 4px 16px -10px rgba(24,24,27,.08);cursor:pointer;
+  transition:transform .15s var(--ease), border-color .15s var(--ease);
+}
+.room-card:hover{transform:translateY(-3px);border-color:rgba(124,111,255,.4)}
+.room-card .room-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--purple-light);color:var(--purple-deep);
+  display:flex;align-items:center;justify-content:center;margin-bottom:12px;
+}
+.room-card h3{font-size:14.5px;font-weight:800;margin:0}
+.room-delete-btn{
+  position:absolute;top:14px;right:14px;
+  width:24px;height:24px;border-radius:50%;border:none;
+  background:var(--surface-2);color:var(--ink-faint);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.room-delete-btn:hover{background:rgba(216,67,58,.12);color:var(--red)}
+
+.room-card.new{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--surface-2);
+  border:1.5px dashed var(--border);box-shadow:none;color:var(--ink-faint);
+  text-align:center;gap:8px;min-height:106px;
+}
+.room-card.new svg{color:var(--purple)}
+.room-card.new:hover{border-color:var(--purple);color:var(--purple-deep)}
+
+.rooms-back-link{
+  display:inline-block;font-size:12.5px;color:var(--ink-faint);font-weight:700;
+  margin-bottom:14px;text-decoration:none;cursor:pointer;
+}
+.rooms-back-link:hover{color:var(--purple-deep)}
+
+.room-detail-header{margin-bottom:14px}
+.room-detail-header h2{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:24px;margin:0;color:var(--ink);
+}
+
+.doc-item-list{display:flex;flex-direction:column;gap:8px}
+.doc-item{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--ink);
+}
+.doc-item .file-icon{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:var(--purple-light);color:var(--purple-deep);
+  display:flex;align-items:center;justify-content:center;
+}
+
+.room-quick-row{
+  display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;
+}
+.room-quick-btn{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:12px;
+  padding:16px;text-align:center;font-size:12.5px;font-weight:700;cursor:pointer;
+  color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:border-color .15s var(--ease), color .15s var(--ease), transform .15s var(--ease);
+}
+.room-quick-btn:hover{border-color:rgba(124,111,255,.4);color:var(--purple-deep);transform:translateY(-2px)}
+
+@media(max-width:700px){
+  .room-quick-row{grid-template-columns:repeat(2,1fr)}
+}
 .doc-card-btn svg{width:14px;height:14px}
 @media(max-width:1240px){
   .shell{grid-template-columns:var(--sidebar-w) 1fr}
@@ -1260,6 +1340,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
         <a class="nav-link" data-view="documents-view">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h8l5 5v11a1.6 1.6 0 01-1.6 1.6H6A1.6 1.6 0 014.4 20V5.6A1.6 1.6 0 016 4z"/><path d="M14 4v5h5"/></svg>
           <span>Documents</span>
+        </a>
+        <a class="nav-link" data-view="rooms-view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>
+          <span>Rooms</span>
         </a>
         <a class="nav-link" data-view="notes-view">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
@@ -1704,6 +1788,63 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
       </section>
       <!-- ===================== /DOCUMENTS VIEW ===================== -->
 
+      <!-- ===================== ROOMS VIEW ===================== -->
+      <section class="view" id="rooms-view" hidden>
+
+        <!-- ---- LIST STATE: grid of all rooms ---- -->
+        <div id="roomsListState">
+
+          <section class="welcome-card">
+            <div class="welcome-text">
+              <h1>Your Rooms</h1>
+              <div class="gradient-rule"></div>
+              <p>Organize your documents by subject so studying stays focused.</p>
+            </div>
+          </section>
+
+          <section class="panel" id="roomsGridPanel" aria-label="Rooms" style="padding:20px;">
+            <div id="roomsGrid" class="room-grid"></div>
+          </section>
+
+        </div>
+
+        <!-- ---- DETAIL STATE: inside one room ---- -->
+        <div id="roomsDetailState" hidden>
+
+          <a href="#" id="roomsBackLink" class="rooms-back-link">&larr; All Rooms</a>
+
+          <div class="room-detail-header">
+            <h2 id="roomDetailName">Room</h2>
+          </div>
+
+          <section class="panel" id="roomDetailDocsPanel" aria-label="Documents in this room" style="padding:20px;margin-bottom:16px;">
+            <div id="roomDetailDocs" class="doc-item-list"></div>
+          </section>
+
+          <div class="room-quick-row">
+            <div class="room-quick-btn" id="roomQuickChat">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h13l3 3v13H4z"/><path d="M8 10h8M8 14h5"/></svg>
+              Chat
+            </div>
+            <div class="room-quick-btn" id="roomQuickQuiz">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+              Quiz
+            </div>
+            <div class="room-quick-btn" id="roomQuickFlashcards">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="14" height="10" rx="2"/><rect x="7" y="10" width="14" height="10" rx="2"/></svg>
+              Flashcards
+            </div>
+            <div class="room-quick-btn" id="roomQuickNotes">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+              Notes
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+      <!-- ===================== /ROOMS VIEW ===================== -->
+
       <!-- ===================== NOTES VIEW ===================== -->
       <section class="view" id="notes-view" hidden>
 
@@ -1768,6 +1909,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 <script src="../js/flashcards.js"></script>
 <script src="../js/documents.js"></script>
 <script src="../js/notes.js"></script>
+<script src="../js/rooms.js"></script>
 <script>
   // Auto-grow the question textarea
   (function(){
@@ -1852,6 +1994,25 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
       <button type="button" id="logoutCancelBtn" class="logout-modal-cancel">Cancel</button>
       <button type="button" id="logoutConfirmBtn" class="logout-modal-confirm">Log Out</button>
     </div>
+  </div>
+</div>
+
+<!-- ===================== CREATE ROOM MODAL ===================== -->
+<div class="logout-modal" id="createRoomModal">
+  <div class="logout-modal-card">
+    <div class="logout-modal-icon" style="background:var(--purple-light);color:var(--purple-deep)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>
+    </div>
+    <h3>Create a room</h3>
+    <p>Give it a subject name — you can rename or delete it later.</p>
+    <form id="createRoomForm">
+      <input type="text" id="createRoomInput" placeholder="e.g. Physics, History" maxlength="100" required
+             style="width:100%;padding:11px 14px;border-radius:11px;background:var(--surface-2);border:1.5px solid var(--border);color:var(--ink);font-family:inherit;font-size:14px;margin-bottom:18px;box-sizing:border-box;">
+      <div class="logout-modal-actions">
+        <button type="button" id="createRoomCancelBtn" class="logout-modal-cancel">Cancel</button>
+        <button type="submit" id="createRoomConfirmBtn" class="logout-modal-confirm" style="background:linear-gradient(90deg,var(--purple-dark),var(--purple))">Create</button>
+      </div>
+    </form>
   </div>
 </div>
 

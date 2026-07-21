@@ -5,6 +5,7 @@
 let currentFlashcards = [];
 let currentCardIndex = 0;
 let flashcardDocumentsLoaded = false;
+let flashcardDocumentsLoadPromise = null;
 
 document.addEventListener("DOMContentLoaded", bindFlashcardEvents);
 
@@ -18,9 +19,34 @@ async function populateFlashcardDocumentSelect() {
 
     const select = document.getElementById("flashcardDocumentSelect");
 
-    if (!select || flashcardDocumentsLoaded) return;
+    if (!select) return;
+
+    if (flashcardDocumentsLoaded) {
+        if (window.applyPendingRoomSelection) {
+            window.applyPendingRoomSelection("flashcardDocumentSelect");
+        }
+        return;
+    }
+
+    if (!flashcardDocumentsLoadPromise) {
+        flashcardDocumentsLoadPromise = loadFlashcardDocumentOptions(select);
+    }
+
+    await flashcardDocumentsLoadPromise;
+
+    if (window.applyPendingRoomSelection) {
+        window.applyPendingRoomSelection("flashcardDocumentSelect");
+    }
+
+}
+
+async function loadFlashcardDocumentOptions(select) {
 
     try {
+
+        if (window.addRoomOptionsToSelect) {
+            await window.addRoomOptionsToSelect(select);
+        }
 
         const result = await getDocuments();
 
@@ -103,14 +129,16 @@ async function handleGenerateFlashcards() {
     const documentSelect = document.getElementById("flashcardDocumentSelect");
     const countInput = document.getElementById("flashcardCount");
 
-    const documentId = documentSelect ? documentSelect.value : "";
+    const scope = window.readScopeFromSelect
+        ? window.readScopeFromSelect(documentSelect)
+        : { documentId: documentSelect ? documentSelect.value : "", roomId: null };
     const numCards = getValidCardCount(countInput);
 
     setGenerating(true);
 
     try {
 
-        const result = await generateFlashcards(documentId, numCards);
+        const result = await generateFlashcards(scope.documentId, numCards, scope.roomId);
 
         currentFlashcards = (result && result.flashcards) ? result.flashcards : [];
 

@@ -6,6 +6,7 @@ from app.api.routes.flashcards import router as flashcards_router
 from app.api.routes.health import router as health_router
 from app.api.routes.notes import router as notes_router
 from app.api.routes.quiz import router as quiz_router
+from app.api.routes.rooms import router as rooms_router
 
 from auth.router import router as auth_router
 
@@ -17,4 +18,5 @@ router.include_router(chat_router)
 router.include_router(quiz_router)
 router.include_router(flashcards_router)
 router.include_router(notes_router)
+router.include_router(rooms_router)
 router.include_router(auth_router)

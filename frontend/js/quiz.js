@@ -70,6 +70,12 @@ function bindNavSwitching() {
                 window.populateNotesDocumentSelect();
             }
 
+            // Rooms has its own grid-loading logic, handled in
+            // rooms.js.
+            if (targetId === "rooms-view" && typeof window.populateRoomsView === "function") {
+                window.populateRoomsView();
+            }
+
         });
 
     }
@@ -117,7 +123,12 @@ async function populateQuizDocumentSelect() {
 
     if (!select) return;
 
-    if (quizDocumentsLoaded) return;
+    if (quizDocumentsLoaded) {
+        if (window.applyPendingRoomSelection) {
+            window.applyPendingRoomSelection("quizDocumentSelect");
+        }
+        return;
+    }
 
     if (!quizDocumentsLoadPromise) {
         quizDocumentsLoadPromise = loadQuizDocumentOptions(select);
@@ -125,11 +136,19 @@ async function populateQuizDocumentSelect() {
 
     await quizDocumentsLoadPromise;
 
+    if (window.applyPendingRoomSelection) {
+        window.applyPendingRoomSelection("quizDocumentSelect");
+    }
+
 }
 
 async function loadQuizDocumentOptions(select) {
 
     try {
+
+        if (window.addRoomOptionsToSelect) {
+            await window.addRoomOptionsToSelect(select);
+        }
 
         const result = await getDocuments();
 
@@ -205,14 +224,16 @@ async function handleGenerateQuiz() {
     const documentSelect = document.getElementById("quizDocumentSelect");
     const questionCountInput = document.getElementById("quizQuestionCount");
 
-    const documentId = documentSelect ? documentSelect.value : "";
+    const scope = window.readScopeFromSelect
+        ? window.readScopeFromSelect(documentSelect)
+        : { documentId: documentSelect ? documentSelect.value : "", roomId: null };
     const numQuestions = getValidQuestionCount(questionCountInput);
 
     setGenerating(true);
 
     try {
 
-        const result = await generateQuiz(documentId, numQuestions);
+        const result = await generateQuiz(scope.documentId, numQuestions, scope.roomId);
 
         currentQuiz = (result && result.questions) ? result.questions : [];
 

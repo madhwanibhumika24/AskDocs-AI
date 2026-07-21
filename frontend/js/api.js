@@ -96,7 +96,7 @@ async function getProfile() {
    CHAT
 ========================================================== */
 
-async function sendMessage(question, documentId) {
+async function sendMessage(question, documentId, roomId) {
 
     return await apiRequest(
 
@@ -107,7 +107,8 @@ async function sendMessage(question, documentId) {
         {
             session_id: getSessionId(),
             question: question,
-            document_id: documentId || null
+            document_id: documentId || null,
+            room_id: roomId || null
         }
 
     );
@@ -205,7 +206,7 @@ async function uploadDocuments(files) {
    QUIZ
 ========================================================== */
 
-async function generateQuiz(documentId, numQuestions) {
+async function generateQuiz(documentId, numQuestions, roomId) {
 
     return await apiRequest(
 
@@ -215,6 +216,7 @@ async function generateQuiz(documentId, numQuestions) {
 
         {
             document_id: documentId || null,
+            room_id: roomId || null,
             num_questions: numQuestions
         }
 
@@ -261,10 +263,48 @@ async function evaluateTeachBack(documentId, concept, studentExplanation) {
 }
 
 /* ==========================================================
+   ROOMS
+========================================================== */
+
+async function createRoom(name) {
+
+    return await apiRequest(
+
+        "/rooms",
+
+        "POST",
+
+        {
+            name: name
+        }
+
+    );
+
+}
+
+async function listRooms() {
+
+    return await apiRequest("/rooms", "GET");
+
+}
+
+async function deleteRoom(roomId) {
+
+    return await apiRequest(`/rooms/${roomId}`, "DELETE");
+
+}
+
+async function getDocumentsInRoom(roomId) {
+
+    return await apiRequest(`/documents?room_id=${encodeURIComponent(roomId)}`, "GET");
+
+}
+
+/* ==========================================================
    NOTES
 ========================================================== */
 
-async function generateNotes(documentId) {
+async function generateNotes(documentId, roomId) {
 
     return await apiRequest(
 
@@ -273,7 +313,8 @@ async function generateNotes(documentId) {
         "POST",
 
         {
-            document_id: documentId || null
+            document_id: documentId || null,
+            room_id: roomId || null
         }
 
     );
@@ -284,7 +325,7 @@ async function generateNotes(documentId) {
    FLASHCARDS
 ========================================================== */
 
-async function generateFlashcards(documentId, numCards) {
+async function generateFlashcards(documentId, numCards, roomId) {
 
     return await apiRequest(
 
@@ -294,6 +335,7 @@ async function generateFlashcards(documentId, numCards) {
 
         {
             document_id: documentId || null,
+            room_id: roomId || null,
             num_cards: numCards
         }
 
@@ -346,6 +388,11 @@ window.generateQuiz = generateQuiz;
 window.generateFlashcards = generateFlashcards;
 
 window.generateNotes = generateNotes;
+
+window.createRoom = createRoom;
+window.listRooms = listRooms;
+window.deleteRoom = deleteRoom;
+window.getDocumentsInRoom = getDocumentsInRoom;
 
 window.getTeachBackPrompt = getTeachBackPrompt;
 window.evaluateTeachBack = evaluateTeachBack;

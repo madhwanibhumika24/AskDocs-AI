@@ -16,9 +16,20 @@ async function populateNotesDocumentSelect() {
 
     const select = document.getElementById("notesDocumentSelect");
 
-    if (!select || notesDocumentsLoaded) return;
+    if (!select) return;
+
+    if (notesDocumentsLoaded) {
+        if (window.applyPendingRoomSelection) {
+            window.applyPendingRoomSelection("notesDocumentSelect");
+        }
+        return;
+    }
 
     try {
+
+        if (window.addRoomOptionsToSelect) {
+            await window.addRoomOptionsToSelect(select);
+        }
 
         const result = await getDocuments();
 
@@ -48,6 +59,10 @@ async function populateNotesDocumentSelect() {
         }
 
         notesDocumentsLoaded = true;
+
+        if (window.applyPendingRoomSelection) {
+            window.applyPendingRoomSelection("notesDocumentSelect");
+        }
 
     }
     catch (error) {
@@ -84,13 +99,15 @@ function bindNotesEvents() {
 async function handleGenerateNotes() {
 
     const documentSelect = document.getElementById("notesDocumentSelect");
-    const documentId = documentSelect ? documentSelect.value : "";
+    const scope = window.readScopeFromSelect
+        ? window.readScopeFromSelect(documentSelect)
+        : { documentId: documentSelect ? documentSelect.value : "", roomId: null };
 
     setGenerating(true);
 
     try {
 
-        const result = await generateNotes(documentId);
+        const result = await generateNotes(scope.documentId, scope.roomId);
 
         const sections = (result && result.sections) ? result.sections : [];
 
