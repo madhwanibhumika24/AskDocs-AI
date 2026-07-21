@@ -24,6 +24,7 @@ class DocumentService:
         self,
         files: List[UploadFile],
         user_id: str = DEFAULT_USER_ID,
+        room_id: str | None = None,
     ):
 
         uploaded_documents = []
@@ -60,14 +61,21 @@ class DocumentService:
                 user_id=user_id,
                 filename=file.filename,
                 file_size=len(contents),
+                room_id=room_id,
             )
 
+            # room_id also gets tagged onto every chunk in ChromaDB, the
+            # same way user_id and document_id already are — this is
+            # what makes it possible to later ask "give me every chunk
+            # in my Physics room" instead of only "every chunk in this
+            # one document".
             ingestion_result = self.ingestion_pipeline.process(
                 file_path=str(file_path),
                 metadata={
                     "user_id": user_id,
                     "document_id": document_id,
                     "filename": file.filename,
+                    "room_id": room_id or "",
                 },
             )
 
@@ -76,6 +84,7 @@ class DocumentService:
                     "document_id": document_id,
                     "filename": file.filename,
                     "file_type": Path(file.filename).suffix.replace(".", ""),
+                    "room_id": room_id,
                     "pages": ingestion_result["pages"],
                     "chunks": ingestion_result["chunks"],
                 }
@@ -90,6 +99,7 @@ class DocumentService:
     async def list_documents(
         self,
         user_id: str = DEFAULT_USER_ID,
+        room_id: str | None = None,
     ):
 
         documents_root = (
@@ -124,6 +134,14 @@ class DocumentService:
                 # from an interrupted upload) instead of failing the
                 # whole list request.
                 continue
+
+            # If a room filter was requested, skip any document that
+            # doesn't belong to that room. Documents uploaded before
+            # this feature existed won't have a "room_id" key at all,
+            # so .get() with a default keeps that from crashing.
+            if room_id is not None:
+                if metadata.get("room_id") != room_id:
+                    continue
 
             documents.append(metadata)
 

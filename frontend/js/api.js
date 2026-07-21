@@ -138,7 +138,7 @@ function getSessionId() {
    UPLOAD DOCUMENT
 ========================================================== */
 
-async function uploadDocuments(files) {
+async function uploadDocuments(files, roomId) {
 
     const formData = new FormData();
 
@@ -146,6 +146,10 @@ async function uploadDocuments(files) {
 
         formData.append("files", file);
 
+    }
+
+    if (roomId) {
+        formData.append("room_id", roomId);
     }
 
     const token = getToken();

@@ -60,7 +60,7 @@ function renderRoomsGrid(rooms) {
 
         card.innerHTML = `
             <div class="room-icon">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>
             </div>
             <button class="room-delete-btn" title="Delete room" aria-label="Delete room">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -250,6 +250,53 @@ function showRoomDetailState() {
 
 }
 
+async function handleRoomFileUpload(event) {
+
+    const files = event.target.files;
+
+    if (!files || files.length === 0) return;
+
+    if (!currentRoomId) {
+        alert("No room is open right now — this shouldn't happen. Try reopening the room.");
+        return;
+    }
+
+    const addDocsBtn = document.getElementById("roomAddDocsBtn");
+    if (addDocsBtn) {
+        addDocsBtn.disabled = true;
+        addDocsBtn.textContent = "Uploading…";
+    }
+
+    try {
+
+        await uploadDocuments(files, currentRoomId);
+
+        // Refresh the document list for this room so the new upload
+        // shows up immediately, no manual page refresh needed.
+        await openRoom(currentRoomId, currentRoomName);
+
+    }
+    catch (error) {
+
+        console.error("[rooms.js] Room upload failed:", error);
+        alert(error?.message || "Upload failed. Please try again.");
+
+    }
+    finally {
+
+        if (addDocsBtn) {
+            addDocsBtn.disabled = false;
+            addDocsBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v16M4 12h16"/></svg> Add documents';
+        }
+
+        // Clear the input so selecting the exact same file again
+        // later still triggers a "change" event.
+        event.target.value = "";
+
+    }
+
+}
+
 /* ==========================================================
    QUICK ACTIONS — jump into Chat/Quiz/Flashcards/Notes,
    pre-scoped to the currently open room.
@@ -259,6 +306,25 @@ function bindRoomsEvents() {
 
     const backLink = document.getElementById("roomsBackLink");
     if (backLink) backLink.addEventListener("click", populateRoomsView);
+
+    // "+ Add documents" inside a room — opens a file picker, and
+    // whatever gets picked is uploaded tagged with the CURRENT room's
+    // id. This uses its own hidden file input (roomUploadInput),
+    // completely separate from the general Upload button's input, so
+    // picking files here can never accidentally affect a normal
+    // no-room upload elsewhere in the app.
+    const addDocsBtn = document.getElementById("roomAddDocsBtn");
+    const roomUploadInput = document.getElementById("roomUploadInput");
+
+    if (addDocsBtn && roomUploadInput) {
+        addDocsBtn.addEventListener("click", function () {
+            roomUploadInput.click();
+        });
+    }
+
+    if (roomUploadInput) {
+        roomUploadInput.addEventListener("change", handleRoomFileUpload);
+    }
 
     // Create Room modal
     const createForm = document.getElementById("createRoomForm");
